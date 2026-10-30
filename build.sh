@@ -33,7 +33,7 @@ echo "Compiling Java sources..."
 find src/java "$GEN" -name '*.java' -print > "$WORK/sources.txt"
 javac -encoding UTF-8 -source 8 -target 8 -classpath "$ANDROID_JAR:$WORK/deps/usb-serial.jar" -d "$CLS" @"$WORK/sources.txt"
 echo "Converting Java bytecode to DEX..."
-"$BT/d8" --lib "$ANDROID_JAR" --min-api "$MIN_API" --classpath "$WORK/deps/usb-serial.jar" --output "$DEX" $(find "$CLS" -name '*.class' -print)
+"$BT/d8" --lib "$ANDROID_JAR" --min-api "$MIN_API" --classpath "$WORK/deps/usb-serial.jar" --output "$DEX" $(find "$CLS" -name '*.class' -print) "$WORK/deps/usb-serial.jar"
 echo "Packaging DEX into APK..."
 mkdir -p "$WORK/apk"
 cp "$WORK/unsigned-unaligned.apk" "$WORK/apk/base.apk"
