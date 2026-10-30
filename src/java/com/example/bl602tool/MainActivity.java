@@ -1,4 +1,6 @@
-package com.example.bl602tool;
+package io.mkp95.blflashdroid;
+
+import io.mkp95.blflashdroid.R;
 
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -118,6 +120,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         loadShortcuts();
         setupShortcuts();
         findViewById(R.id.send).setOnClickListener(v -> sendText());
+        findViewById(R.id.clearSend).setOnClickListener(v -> sendText.setText(""));
 
         findViewById(R.id.pickFirmware).setOnClickListener(v -> pickFirmware());
         findViewById(R.id.startFlash).setOnClickListener(v -> startFlash());
@@ -165,7 +168,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             if (chosen == null) {
                 UsbDevice device = drivers.get(0).getDevice();
                 PendingIntent pi = PendingIntent.getBroadcast(this, 0,
-                    new Intent("com.example.bl602tool.USB_PERMISSION"),
+                    new Intent("io.mkp95.blflashdroid.USB_PERMISSION"),
                     PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
                 usbManager.requestPermission(device, pi);
                 toast("USB permission requested. Tap Connect again after granting permission.");
@@ -318,7 +321,6 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
 
     private void appendTerminalRendered(String s, int dataColor) {
         if (s == null || s.length() == 0) return;
-        final int previousScrollY = terminalScroll.getScrollY();
         SpannableStringBuilder output = new SpannableStringBuilder();
         List<int[]> timestampRanges = new ArrayList<>();
         for (int i = 0; i < s.length(); i++) {
@@ -349,7 +351,6 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             if (cut < text.length()) terminal.setText(text.subSequence(cut, text.length()));
         }
         if (autoScroll) terminalScroll.post(() -> terminalScroll.fullScroll(View.FOCUS_DOWN));
-        else terminalScroll.post(() -> terminalScroll.scrollTo(0, previousScrollY));
     }
 
     private void showBaudPicker() {
