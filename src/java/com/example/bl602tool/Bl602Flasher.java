@@ -12,8 +12,8 @@ final class Bl602Flasher {
   Image im=parse(loader); log("BL602 UART programmer; 200000 baud maximum (8-N-1)");
   log("FW target 0x00010000, "+fw.length+" bytes; loader RAM 0x"+hx(im.addr));
   port.setParameters(BAUD,8,UsbSerialPort.STOPBITS_1,UsbSerialPort.PARITY_NONE);drain();
-  handshake("BootROM"); bootCmd(0x10,new byte[0],20);log("BootROM info received");
-  bootCmd(0x11,im.header,0);bootCmd(0x17,im.segHeader,0);
+  handshake("BootROM"); bootCmd(0x10,new byte[0],22);log("BootROM info received");
+  bootCmd(0x11,im.header,0);bootCmd(0x17,im.segHeader,16);
   int sent=0;while(sent<im.data.length){int n=Math.min(4092,im.data.length-sent);bootCmd(0x18,Arrays.copyOfRange(im.data,sent,sent+n),0);sent+=n;progress(5+sent*15/im.data.length);}
   bootCmd(0x19,new byte[0],0);bootCmd(0x1a,new byte[0],0);log("RAM eflash loader started");Thread.sleep(100);drain();handshake("RAM loader");
   byte[] pp=new byte[4+para.length];put32(pp,0,255);System.arraycopy(para,0,pp,4,para.length);loaderCmd(0x3b,pp,0,10000);
@@ -26,7 +26,7 @@ final class Bl602Flasher {
   loaderCmd(0x3a,new byte[0],0,15000);log("Loader write-check passed");
   byte[] req=new byte[8];put32(req,0,APP_OFFSET);put32(req,4,fw.length);byte[] device=loaderCmd(0x3e,req,32,30000);
   if(!MessageDigest.isEqual(host,device))throw new IOException("SHA-256 verification failed. Host "+hex(host)+" device "+hex(device));
-  progress(100);log("SHA-256 verified: "+hex(host));log("FLASH SUCCESS");
+  progress(100);log("SHA-256 verified: "+hex(host));loaderCmd(0x21,new byte[0],0,5000);log("Chip reset; booting from flash");log("FLASH SUCCESS");
  }
  private static final class Image{byte[]header,segHeader,data;int addr;}
  private Image parse(byte[]b)throws IOException{
@@ -39,7 +39,7 @@ final class Bl602Flasher {
   Image x=new Image();x.header=Arrays.copyOfRange(b,0,176);x.segHeader=Arrays.copyOfRange(b,p,p+16);x.data=Arrays.copyOfRange(b,p+16,b.length);x.addr=addr;return x;
  }
  private void handshake(String phase)throws Exception{byte[]s=new byte[100];Arrays.fill(s,(byte)0x55);port.write(s,1000);byte[]a=read(2,2500);if(a[0]!='O'||a[1]!='K')throw err(a,phase+" handshake");Thread.sleep(20);log(phase+" handshake OK @ 200000");}
- private void bootCmd(int id,byte[]d,int response)throws Exception{byte[]p=new byte[4+d.length];p[0]=(byte)id;p[2]=(byte)d.length;p[3]=(byte)(d.length>>>8);System.arraycopy(d,0,p,4,d.length);port.write(p,5000);byte[]a=read(2,5000);if(a[0]!='O'||a[1]!='K')throw err(a,"BootROM cmd 0x"+hx(id));if(response>0)read(response+2,5000);}
+ private void bootCmd(int id,byte[]d,int trailingBytes)throws Exception{byte[]p=new byte[4+d.length];p[0]=(byte)id;p[2]=(byte)d.length;p[3]=(byte)(d.length>>>8);System.arraycopy(d,0,p,4,d.length);port.write(p,5000);byte[]a=read(2,5000);if(a[0]!='O'||a[1]!='K')throw err(a,"BootROM cmd 0x"+hx(id));if(trailingBytes>0)read(trailingBytes,5000);}
  private byte[] loaderCmd(int id,byte[]d,int response,int timeout)throws Exception{
   int len=d.length,sum=(len&255)+(len>>>8&255);for(byte b:d)sum+=b&255;
   byte[]p=new byte[4+len];p[0]=(byte)id;p[1]=(byte)sum;p[2]=(byte)len;p[3]=(byte)(len>>>8);System.arraycopy(d,0,p,4,len);
