@@ -78,7 +78,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         baudRate.setText("500000");
         viewMode = findViewById(R.id.viewMode);
         newlineMode = findViewById(R.id.newlineMode);
-        viewMode.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"ASCII / UTF-8","Hexadecimal"}));
+        viewMode.setAdapter(createDarkSpinnerAdapter(new String[]{"ASCII / UTF-8","Hexadecimal"}));
         formatToggle = findViewById(R.id.formatToggle);
         formatToggle.setOnClickListener(v -> setFormatMode(formatMode == 0 ? 1 : 0));
         viewMode.setSelection(formatMode);
@@ -87,14 +87,14 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             @Override public void onNothingSelected(android.widget.AdapterView<?> parent) { }
         });
         updateFormatToggle();
-        newlineMode.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"CR + LF","LF","CR","None"}));
+        newlineMode.setAdapter(createDarkSpinnerAdapter(new String[]{"CR + LF","LF","CR","None"}));
         connectButton = findViewById(R.id.connect);
         autoScrollButton = findViewById(R.id.autoScroll);
         connectButton.setOnClickListener(v -> { if (port == null) connectUsb(); else disconnectUsb(); });
         findViewById(R.id.clearTerminal).setOnClickListener(v -> clearTerminal());
         autoScrollButton.setOnClickListener(v -> {
             autoScroll = !autoScroll;
-            autoScrollButton.setText(autoScroll ? "Auto: On" : "Auto: Off");
+            updateAutoScrollButton();
             if (autoScroll) terminalScroll.post(() -> terminalScroll.fullScroll(View.FOCUS_DOWN));
         });
         findViewById(R.id.baudControl).setOnClickListener(v -> showBaudPicker());
@@ -122,6 +122,9 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         findViewById(R.id.startFlash).setOnClickListener(v -> startFlash());
         findViewById(R.id.dtr).setOnClickListener(v -> setDtr());
         findViewById(R.id.rts).setOnClickListener(v -> setRts());
+        applyInterfaceTheme();
+        updateAutoScrollButton();
+        updateModemOutputButtons();
         showPanel(1);
     }
 
@@ -170,7 +173,8 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             executor.submit(ioManager);
             status.setText("Connected: " + chosen.getDevice().getDeviceName() + " @ " + baud);
             status.setTextColor(0xff16803c);
-            connectButton.setText("Disconnect");
+            connectButton.setText("⏻");
+            connectButton.setContentDescription("Disconnect USB serial");
             findViewById(R.id.baudControl).setEnabled(false);
             appendTerminal("\n[connected @ " + baud + " baud]\n");
             refreshModemStatus();
@@ -184,7 +188,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         } catch (Exception ignored) {}
         status.setText("USB disconnected");
         status.setTextColor(0xffb00020);
-        if (connectButton != null) connectButton.setText("Connect");
+        if (connectButton != null) { connectButton.setText("⏻"); connectButton.setContentDescription("Connect USB serial"); }
         if (findViewById(R.id.baudControl) != null) findViewById(R.id.baudControl).setEnabled(true);
         appendTerminal("\n[disconnected]\n");
     }
@@ -244,7 +248,10 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     }
 
     private void updateFormatToggle() {
-        if (formatToggle != null) formatToggle.setText(formatMode == 0 ? "ASCII" : "HEX");
+        if (formatToggle != null) {
+            formatToggle.setText(formatMode == 0 ? "Aa" : "0x");
+            formatToggle.setContentDescription(formatMode == 0 ? "ASCII receive format" : "Hexadecimal receive format");
+        }
     }
 
     private void clearTerminal() {
@@ -285,6 +292,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
 
     private void appendTerminalRendered(String s, int dataColor) {
         if (s == null || s.length() == 0) return;
+        final int previousScrollY = terminalScroll.getScrollY();
         SpannableStringBuilder output = new SpannableStringBuilder();
         List<int[]> timestampRanges = new ArrayList<>();
         for (int i = 0; i < s.length(); i++) {
@@ -315,6 +323,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             if (cut < text.length()) terminal.setText(text.subSequence(cut, text.length()));
         }
         if (autoScroll) terminalScroll.post(() -> terminalScroll.fullScroll(View.FOCUS_DOWN));
+        else terminalScroll.post(() -> terminalScroll.scrollTo(0, previousScrollY));
     }
 
     private void showBaudPicker() {
@@ -341,24 +350,24 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
 
     private void showMenu(View anchor) {
         PopupMenu menu = new PopupMenu(this, anchor);
-        menu.getMenu().add("History");
-        menu.getMenu().add(logMode ? "Log mode: On" : "Log mode: Off");
-        menu.getMenu().add("Settings");
-        menu.getMenu().add("Flash tools");
-        menu.getMenu().add("Copy terminal");
-        menu.getMenu().add("Paste");
-        menu.getMenu().add("Clear terminal");
+        menu.getMenu().add("◷  History");
+        menu.getMenu().add(logMode ? "◉  Log mode: On" : "◯  Log mode: Off");
+        menu.getMenu().add("⚙  Settings");
+        menu.getMenu().add("⇧  Flash tools");
+        menu.getMenu().add("▣  Copy terminal");
+        menu.getMenu().add("▤  Paste");
+        menu.getMenu().add("⌫  Clear terminal");
         menu.setOnMenuItemClickListener(item -> {
             String action = item.getTitle().toString();
-            if (action.equals("History")) showHistory();
-            else if (action.startsWith("Log mode:")) {
+            if (action.contains("History")) showHistory();
+            else if (action.contains("Log mode:")) {
                 logMode = !logMode;
                 toast("Timestamp log mode " + (logMode ? "enabled" : "disabled"));
-            } else if (action.equals("Settings")) showPanel(2);
-            else if (action.equals("Flash tools")) showPanel(0);
-            else if (action.equals("Copy terminal")) copyTerminal();
-            else if (action.equals("Paste")) pasteClipboard();
-            else if (action.equals("Clear terminal")) clearTerminal();
+            } else if (action.contains("Settings")) showPanel(2);
+            else if (action.contains("Flash tools")) showPanel(0);
+            else if (action.contains("Copy terminal")) copyTerminal();
+            else if (action.contains("Paste")) pasteClipboard();
+            else if (action.contains("Clear terminal")) clearTerminal();
             return true;
         });
         menu.show();
@@ -489,14 +498,44 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         toast("Flashing is not enabled in this starter build.");
     }
     private void appendFlashLog(String s) { flashLog.append(s); }
+
+    private void updateAutoScrollButton() {
+        autoScrollButton.setText(autoScroll ? "⇣" : "↕");
+        autoScrollButton.setContentDescription(autoScroll ? "Auto-scroll on" : "Auto-scroll off");
+        autoScrollButton.setBackgroundTintList(android.content.res.ColorStateList.valueOf(autoScroll ? 0xff167c70 : 0xff394957));
+    }
+
+    private void updateModemOutputButtons() {
+        Button dtr = findViewById(R.id.dtr), rts = findViewById(R.id.rts);
+        if (dtr != null) { dtr.setText(dtrState ? "DTR ●" : "DTR ○"); dtr.setContentDescription("Toggle DTR, currently " + (dtrState ? "on" : "off")); dtr.setBackgroundTintList(android.content.res.ColorStateList.valueOf(dtrState ? 0xff167c70 : 0xff394957)); }
+        if (rts != null) { rts.setText(rtsState ? "RTS ●" : "RTS ○"); rts.setContentDescription("Toggle RTS, currently " + (rtsState ? "on" : "off")); rts.setBackgroundTintList(android.content.res.ColorStateList.valueOf(rtsState ? 0xff167c70 : 0xff394957)); }
+    }
+
+    private ArrayAdapter<String> createDarkSpinnerAdapter(String[] values) {
+        return new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, values) {
+            private View style(View view) { TextView t=(TextView)view; t.setTextColor(0xfff1f5f9); t.setTextSize(14); t.setPadding(dp(12),dp(10),dp(12),dp(10)); t.setBackgroundColor(0xff263746); return t; }
+            @Override public View getView(int p, View v, android.view.ViewGroup parent) { return style(super.getView(p,v,parent)); }
+            @Override public View getDropDownView(int p, View v, android.view.ViewGroup parent) { return style(super.getDropDownView(p,v,parent)); }
+        };
+    }
+
+    private void applyInterfaceTheme() {
+        int[] ids={R.id.connect,R.id.clearTerminal,R.id.formatToggle,R.id.autoScroll,R.id.baudControl,R.id.menu,R.id.send,R.id.m1,R.id.m2,R.id.m3,R.id.m4,R.id.m5,R.id.m6,R.id.m7,R.id.pickFirmware,R.id.startFlash,R.id.backToTerminal};
+        for(int id:ids){ Button b=findViewById(id); if(b!=null){ b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xff263746)); b.setTextColor(0xfff1f5f9); b.setAllCaps(false); } }
+        int[] accent={R.id.connect,R.id.send,R.id.startFlash};
+        for(int id:accent){ Button b=findViewById(id); if(b!=null)b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xff167c70)); }
+        int[] labels={R.id.firmwareList,R.id.flashLog};
+        for(int id:labels){ TextView t=findViewById(id); if(t!=null)t.setTextColor(0xffe6edf3); }
+    }
+
     private void setDtr() {
         if (port == null) { toast("Connect first."); return; }
-        try { dtrState = !dtrState; port.setDTR(dtrState); toast("DTR " + dtrState); }
+        try { boolean next = !dtrState; port.setDTR(next); dtrState = next; updateModemOutputButtons(); }
         catch (Exception e) { toast("DTR unavailable: " + e.getMessage()); }
     }
     private void setRts() {
         if (port == null) { toast("Connect first."); return; }
-        try { rtsState = !rtsState; port.setRTS(rtsState); toast("RTS " + rtsState); }
+        try { boolean next = !rtsState; port.setRTS(next); rtsState = next; updateModemOutputButtons(); }
         catch (Exception e) { toast("RTS unavailable: " + e.getMessage()); }
     }
     private void toast(String s) { Toast.makeText(this, s, Toast.LENGTH_LONG).show(); }
