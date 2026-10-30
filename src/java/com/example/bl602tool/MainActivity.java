@@ -1,6 +1,7 @@
 package com.example.bl602tool;
 
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.*;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
