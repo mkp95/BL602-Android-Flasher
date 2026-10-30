@@ -610,11 +610,91 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
 
     private void startFlash() {
         if (port == null) { toast("Connect to the CH340 first."); return; }
-        if (firmwareUris.isEmpty()) { toast("Select at least one BIN file."); return; }
-        appendFlashLog("BL602 flashing engine is not implemented in this starter build.\n");
-        appendFlashLog("Firmware selection and UART transport are ready; next step is porting the BL602 loader protocol and bundled loader/config assets.\n");
-        appendFlashLog("No erase or write command was sent.\n");
-        toast("Flashing is not enabled in this starter build.");
+        if (firmwareUris.isEmpty()) { toast("Select one BIN file first."); return; }
+        new AlertDialog.Builder(this)
+            .setTitle("Prepare BL602 for UART flashing")
+            .setMessage("Before continuing, hold GPIO8 (BOOT) HIGH and reset/power-cycle the BL602. Keep GPIO8 HIGH until the loader has started.\n\nThe app writes only the FW slot at 0x10000 and refuses images larger than 0x140000 bytes. Boot2 and the partition table are not erased. Continue?")
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("Start", (d, w) -> startFlashWorker())
+            .show();
+    }
+
+    private void startFlashWorker() {
+        final UsbSerialPort activePort = port;
+        final Uri firmwareUri = firmwareUris.get(0);
+        final int restoreBaud;
+        try { restoreBaud = getBaud(); }
+        catch (Exception e) { toast(e.getMessage()); return; }
+        final Button flashButton = findViewById(R.id.startFlash);
+        final ProgressBar progress = findViewById(R.id.progress);
+        flashButton.setEnabled(false);
+        progress.setProgress(0);
+        flashLog.setText("");
+        flashLogAtLineStart = true;
+        if (ioManager != null) { ioManager.stop(); ioManager = null; }
+        status.setText("●  FLASHING @ 200000");
+        status.setTextColor(0xffffc66d);
+        new Thread(() -> {
+            boolean success = false;
+            try {
+                byte[] firmware = readUriBytes(firmwareUri, 0x140000);
+                byte[] loader = readAssetBytes("bl602/eflash_loader_40m.bin");
+                byte[] para = readAssetBytes("bl602/flash_para.bin");
+                new Bl602Flasher(activePort, new Bl602Flasher.Listener() {
+                    @Override public void log(String message) {
+                        runOnUiThread(() -> appendFlashLog(message));
+                    }
+                    @Override public void progress(int value) {
+                        runOnUiThread(() -> progress.setProgress(value));
+                    }
+                }).flash(firmware, loader, para);
+                success = true;
+            } catch (Exception e) {
+                final String message = e.getMessage() == null ? e.toString() : e.getMessage();
+                runOnUiThread(() -> {
+                    appendFlashLog("ERROR: " + message + "\n");
+                    toast("Flash failed: " + message);
+                });
+            } finally {
+                try { activePort.setParameters(restoreBaud, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE); }
+                catch (Exception ignored) {}
+                final boolean completed = success;
+                runOnUiThread(() -> {
+                    if (port == activePort) {
+                        ioManager = new SerialInputOutputManager(activePort, this);
+                        executor.submit(ioManager);
+                        status.setText(completed ? "●  USB CONNECTED     " + restoreBaud + " baud" : "●  USB CONNECTED     " + restoreBaud + " baud (flash stopped)");
+                        status.setTextColor(completed ? 0xff54d69a : 0xffffc66d);
+                    }
+                    flashButton.setEnabled(true);
+                    appendFlashLog(completed ? "Terminal UART restored to " + restoreBaud + " baud.\n" : "Terminal UART restored to " + restoreBaud + " baud.\n");
+                });
+            }
+        }, "bl602-flash").start();
+    }
+
+    private byte[] readUriBytes(Uri uri, int maxBytes) throws java.io.IOException {
+        java.io.InputStream in = getContentResolver().openInputStream(uri);
+        if (in == null) throw new java.io.IOException("Cannot open selected firmware file.");
+        try { return readBounded(in, maxBytes, "Firmware"); }
+        finally { in.close(); }
+    }
+
+    private byte[] readAssetBytes(String name) throws java.io.IOException {
+        java.io.InputStream in = getAssets().open(name);
+        try { return readBounded(in, 1024 * 1024, name); }
+        finally { in.close(); }
+    }
+
+    private byte[] readBounded(java.io.InputStream in, int maxBytes, String label) throws java.io.IOException {
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        byte[] buffer = new byte[8192];
+        int n;
+        while ((n = in.read(buffer)) != -1) {
+            if (out.size() + n > maxBytes) throw new java.io.IOException(label + " exceeds allowed size.");
+            out.write(buffer, 0, n);
+        }
+        return out.toByteArray();
     }
     private boolean flashLogAtLineStart = true;
     private void appendFlashLog(String s) {
