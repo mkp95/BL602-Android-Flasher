@@ -107,6 +107,11 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             if (autoScroll) terminalScroll.post(() -> terminalScroll.fullScroll(View.FOCUS_DOWN));
         });
         findViewById(R.id.baudControl).setOnClickListener(v -> showBaudPicker());
+        findViewById(R.id.zoomOut).setOnClickListener(v -> adjustTerminalZoom(-1f));
+        findViewById(R.id.zoomIn).setOnClickListener(v -> adjustTerminalZoom(1f));
+        findViewById(R.id.flashZoomOut).setOnClickListener(v -> adjustFlashLogZoom(-1f));
+        findViewById(R.id.flashZoomIn).setOnClickListener(v -> adjustFlashLogZoom(1f));
+        flashLog.setTextSize(getSharedPreferences("terminal", MODE_PRIVATE).getFloat("flashLogTextSize", 13f));
         terminalTextSize = getSharedPreferences("terminal", MODE_PRIVATE).getFloat("textSize", 13f);
         terminal.setTextSize(terminalTextSize);
         scaleDetector = new ScaleGestureDetector(this, new ScaleGestureDetector.SimpleOnScaleGestureListener() {
@@ -526,7 +531,8 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     }
     private void pickFirmware() {
         Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        i.setType("*/*");
+        i.setType("application/octet-stream");
+        i.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"application/octet-stream", "application/x-binary"});
         i.addCategory(Intent.CATEGORY_OPENABLE);
         i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false);
         startActivityForResult(i, PICK_FILES);
@@ -606,7 +612,10 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         appendFlashLog("No erase or write command was sent.\n");
         toast("Flashing is not enabled in this starter build.");
     }
-    private void appendFlashLog(String s) { flashLog.append(s); }
+    private void appendFlashLog(String s) { if (s != null) flashLog.append(new SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault()).format(new Date()) + "  " + s); }
+
+    private void adjustTerminalZoom(float delta) { terminalTextSize = Math.max(8f, Math.min(28f, terminalTextSize + delta)); terminal.setTextSize(terminalTextSize); getSharedPreferences("terminal", MODE_PRIVATE).edit().putFloat("textSize", terminalTextSize).apply(); }
+    private void adjustFlashLogZoom(float delta) { float size = Math.max(8f, Math.min(28f, flashLog.getTextSize() / getResources().getDisplayMetrics().scaledDensity + delta)); flashLog.setTextSize(size); getSharedPreferences("terminal", MODE_PRIVATE).edit().putFloat("flashLogTextSize", size).apply(); }
 
     private void setToolbarIcon(Button button, int resourceId) {
         setToolbarIcon(button, resourceId, 0xfff1f5f9);
