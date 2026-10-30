@@ -126,6 +126,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         applyInterfaceTheme();
         updateAutoScrollButton();
         updateModemOutputButtons();
+        updateConnectionButton(false);
         showPanel(1);
     }
 
@@ -180,9 +181,10 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             ioManager = new SerialInputOutputManager(port, this);
             executor.submit(ioManager);
             status.setText("Connected: " + chosen.getDevice().getDeviceName() + " @ " + baud);
-            status.setTextColor(0xff16803c);
-            connectButton.setText("🔌");
+            status.setTextColor(0xff54d69a);
+            connectButton.setText("⏻");
             connectButton.setContentDescription("Disconnect USB serial");
+            updateConnectionButton(true);
             findViewById(R.id.baudControl).setEnabled(false);
             appendTerminal("\n[connected @ " + baud + " baud]\n");
             refreshModemStatus();
@@ -195,8 +197,8 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             if (port != null) { port.close(); port = null; }
         } catch (Exception ignored) {}
         status.setText("USB disconnected");
-        status.setTextColor(0xffb00020);
-        if (connectButton != null) { connectButton.setText("🔌"); connectButton.setContentDescription("Connect USB serial"); }
+        status.setTextColor(0xffff8b8b);
+        if (connectButton != null) { connectButton.setText("⏻"); connectButton.setContentDescription("Connect USB serial"); updateConnectionButton(false); }
         if (findViewById(R.id.baudControl) != null) findViewById(R.id.baudControl).setEnabled(true);
         appendTerminal("\n[disconnected]\n");
     }
@@ -553,6 +555,14 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     }
     private void appendFlashLog(String s) { flashLog.append(s); }
 
+    private void updateConnectionButton(boolean connected) {
+        if (connectButton == null) return;
+        connectButton.setBackgroundTintList(android.content.res.ColorStateList.valueOf(connected ? 0xff167c70 : 0xff394957));
+        connectButton.setTextColor(0xfff1f5f9);
+        connectButton.setText("⏻");
+        connectButton.setContentDescription(connected ? "Disconnect USB serial" : "Connect USB serial");
+    }
+
     private void updateAutoScrollButton() {
         autoScrollButton.setText(autoScroll ? "⇣" : "↕");
         autoScrollButton.setContentDescription(autoScroll ? "Auto-scroll on" : "Auto-scroll off");
@@ -594,7 +604,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     private void applyInterfaceTheme() {
         int[] ids={R.id.connect,R.id.clearTerminal,R.id.formatToggle,R.id.autoScroll,R.id.baudControl,R.id.menu,R.id.send,R.id.m1,R.id.m2,R.id.m3,R.id.m4,R.id.m5,R.id.m6,R.id.m7,R.id.pickFirmware,R.id.startFlash,R.id.backToTerminal,R.id.flashBack};
         for(int id:ids){ Button b=findViewById(id); if(b!=null){ b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xff263746)); b.setTextColor(0xfff1f5f9); b.setAllCaps(false); } }
-        int[] accent={R.id.connect,R.id.send,R.id.startFlash};
+        int[] accent={R.id.send,R.id.startFlash};
         for(int id:accent){ Button b=findViewById(id); if(b!=null)b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xff167c70)); }
         int[] labels={R.id.firmwareList,R.id.flashLog};
         for(int id:labels){ TextView t=findViewById(id); if(t!=null)t.setTextColor(0xffe6edf3); }
