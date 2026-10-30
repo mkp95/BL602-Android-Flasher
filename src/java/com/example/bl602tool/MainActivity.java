@@ -8,7 +8,6 @@ import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.*;
 import android.content.ClipData;
@@ -44,7 +43,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         status = findViewById(R.id.status);
         terminal = findViewById(R.id.terminal);
         terminalScroll = findViewById(R.id.terminalScroll);
-        terminal.setMovementMethod(new ScrollingMovementMethod());
+        terminal.setText("");
         firmwareList = findViewById(R.id.firmwareList);
         flashLog = findViewById(R.id.flashLog);
         sendText = findViewById(R.id.sendText);
