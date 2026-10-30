@@ -165,6 +165,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         if (viewMode != null && viewMode.getSelectedItemPosition() == 1) {
             StringBuilder hex = new StringBuilder();
             for (byte value : data) hex.append(String.format(Locale.US, "%02X ", value & 0xff));
+            hex.append("\\n");
             text = hex.toString();
         } else {
             text = new String(data, java.nio.charset.StandardCharsets.UTF_8);
