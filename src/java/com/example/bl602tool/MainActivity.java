@@ -182,7 +182,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             executor.submit(ioManager);
             status.setText("Connected: " + chosen.getDevice().getDeviceName() + " @ " + baud);
             status.setTextColor(0xff54d69a);
-            connectButton.setText("⏻");
+            connectButton.setText("");
             connectButton.setContentDescription("Disconnect USB serial");
             updateConnectionButton(true);
             findViewById(R.id.baudControl).setEnabled(false);
@@ -555,11 +555,22 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     }
     private void appendFlashLog(String s) { flashLog.append(s); }
 
+    private void setToolbarIcon(Button button, int resourceId) {
+        android.graphics.drawable.Drawable icon = getDrawable(resourceId);
+        if (icon != null) {
+            icon.setTint(0xfff1f5f9);
+            button.setCompoundDrawablesWithIntrinsicBounds(icon, null, null, null);
+            button.setCompoundDrawablePadding(0);
+            button.setGravity(android.view.Gravity.CENTER);
+        }
+    }
+
     private void updateConnectionButton(boolean connected) {
         if (connectButton == null) return;
         connectButton.setBackgroundTintList(android.content.res.ColorStateList.valueOf(connected ? 0xff167c70 : 0xff394957));
         connectButton.setTextColor(0xfff1f5f9);
-        connectButton.setText("⏻");
+        connectButton.setText("");
+        setToolbarIcon(connectButton, R.drawable.ic_power);
         connectButton.setContentDescription(connected ? "Disconnect USB serial" : "Connect USB serial");
     }
 
@@ -604,6 +615,9 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     private void applyInterfaceTheme() {
         int[] ids={R.id.connect,R.id.clearTerminal,R.id.formatToggle,R.id.autoScroll,R.id.baudControl,R.id.menu,R.id.send,R.id.m1,R.id.m2,R.id.m3,R.id.m4,R.id.m5,R.id.m6,R.id.m7,R.id.pickFirmware,R.id.startFlash,R.id.backToTerminal,R.id.flashBack};
         for(int id:ids){ Button b=findViewById(id); if(b!=null){ b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xff263746)); b.setTextColor(0xfff1f5f9); b.setAllCaps(false); } }
+        setToolbarIcon((Button)findViewById(R.id.connect), R.drawable.ic_power);
+        setToolbarIcon((Button)findViewById(R.id.clearTerminal), R.drawable.ic_delete);
+        setToolbarIcon((Button)findViewById(R.id.autoScroll), R.drawable.ic_scroll);
         int[] accent={R.id.send,R.id.startFlash};
         for(int id:accent){ Button b=findViewById(id); if(b!=null)b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xff167c70)); }
         int[] labels={R.id.firmwareList,R.id.flashLog};
