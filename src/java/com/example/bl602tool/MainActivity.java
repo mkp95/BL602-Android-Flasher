@@ -174,7 +174,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             executor.submit(ioManager);
             status.setText("Connected: " + chosen.getDevice().getDeviceName() + " @ " + baud);
             status.setTextColor(0xff16803c);
-            connectButton.setText("⏻");
+            connectButton.setText("🔌");
             connectButton.setContentDescription("Disconnect USB serial");
             findViewById(R.id.baudControl).setEnabled(false);
             appendTerminal("\n[connected @ " + baud + " baud]\n");
@@ -189,7 +189,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         } catch (Exception ignored) {}
         status.setText("USB disconnected");
         status.setTextColor(0xffb00020);
-        if (connectButton != null) { connectButton.setText("⏻"); connectButton.setContentDescription("Connect USB serial"); }
+        if (connectButton != null) { connectButton.setText("🔌"); connectButton.setContentDescription("Connect USB serial"); }
         if (findViewById(R.id.baudControl) != null) findViewById(R.id.baudControl).setEnabled(true);
         appendTerminal("\n[disconnected]\n");
     }
@@ -346,7 +346,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
 
     private void applyBaudLabel() {
         String value = baudRate.getText().toString().trim();
-        ((Button)findViewById(R.id.baudControl)).setText(value.isEmpty() ? "Baud" : value);
+        ((Button)findViewById(R.id.baudControl)).setText("⌁ " + (value.isEmpty() ? "Baud" : value));
     }
 
     private void showMenu(View anchor) {
@@ -508,8 +508,18 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
 
     private void updateModemOutputButtons() {
         Button dtr = findViewById(R.id.dtr), rts = findViewById(R.id.rts);
-        if (dtr != null) { dtr.setText(dtrState ? "DTR ●" : "DTR ○"); dtr.setContentDescription("Toggle DTR, currently " + (dtrState ? "on" : "off")); dtr.setBackgroundTintList(android.content.res.ColorStateList.valueOf(dtrState ? 0xff167c70 : 0xff394957)); }
-        if (rts != null) { rts.setText(rtsState ? "RTS ●" : "RTS ○"); rts.setContentDescription("Toggle RTS, currently " + (rtsState ? "on" : "off")); rts.setBackgroundTintList(android.content.res.ColorStateList.valueOf(rtsState ? 0xff167c70 : 0xff394957)); }
+        if (dtr != null) { setModemIndicator(dtr, "DTR", dtrState, true); }
+        if (rts != null) { setModemIndicator(rts, "RTS", rtsState, true); }
+    }
+
+    private void setModemIndicator(Button button, String label, boolean enabled, boolean clickable) {
+        String value = label + " ●";
+        android.text.SpannableString styled = new android.text.SpannableString(value);
+        styled.setSpan(new ForegroundColorSpan(enabled ? 0xff35d07f : 0xff8996a3), value.length()-1, value.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        button.setText(styled);
+        button.setContentDescription(label + (clickable ? " toggle, currently " : " status: ") + (enabled ? "on" : "off"));
+        button.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xff263746));
+        button.setTextColor(0xffe6edf3);
     }
 
     private ArrayAdapter<String> createDarkSpinnerAdapter(String[] values) {
