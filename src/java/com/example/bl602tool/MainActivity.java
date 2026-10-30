@@ -286,7 +286,22 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     }
 
     @Override public void onRunError(Exception e) {
-        runOnUiThread(() -> appendTerminal("\n[serial error: " + e.getMessage() + "]\n"));
+        final UsbSerialPort failedPort = port;
+        final String message = e == null || e.getMessage() == null ? "I/O stopped" : e.getMessage();
+        runOnUiThread(() -> {
+            // Ignore a stale callback after the user has already disconnected or reconnected.
+            if (failedPort == null || port != failedPort) return;
+            port = null;
+            ioManager = null;
+            try { failedPort.close(); } catch (Exception ignored) { }
+            status.setText("●  USB DISCONNECTED");
+            status.setTextColor(0xffff8b8b);
+            updateConnectionButton(false);
+            View baud = findViewById(R.id.baudControl);
+            if (baud != null) baud.setEnabled(true);
+            appendTerminal("\\n[serial stopped: " + message + "]\\n");
+            appendTerminal("[USB disconnected — tap the plug to reconnect]\\n");
+        });
     }
     private static final int TIMESTAMP_COLOR = 0xff77838f;
 
@@ -565,26 +580,28 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     private void appendFlashLog(String s) { flashLog.append(s); }
 
     private void setToolbarIcon(Button button, int resourceId) {
+        if (button == null) return;
         android.graphics.drawable.Drawable icon = getDrawable(resourceId);
-        if (icon != null) {
-            icon = icon.mutate();
-            icon.setTint(0xfff1f5f9);
-            android.graphics.drawable.GradientDrawable tile = new android.graphics.drawable.GradientDrawable();
-            int tileColor = 0xff394957;
-            if (button.getId() == R.id.autoScroll && autoScroll) tileColor = 0xff167c70;
-            tile.setColor(tileColor);
-            tile.setCornerRadius(dp(5));
-            android.graphics.drawable.LayerDrawable layers =
-                new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{tile, icon});
-            layers.setLayerGravity(1, android.view.Gravity.CENTER);
-            layers.setLayerWidth(1, dp(24));
-            layers.setLayerHeight(1, dp(24));
-            button.setBackground(layers);
-            button.setCompoundDrawables(null, null, null, null);
-            button.setText("");
-            button.setGravity(android.view.Gravity.CENTER);
-            button.setPadding(0, 0, 0, 0);
-        }
+        if (icon == null) return;
+        icon = icon.mutate();
+        icon.setTint(0xfff1f5f9);
+        android.graphics.drawable.GradientDrawable tile = new android.graphics.drawable.GradientDrawable();
+        int tileColor = button.getId() == R.id.autoScroll && autoScroll ? 0xff167c70 : 0xff394957;
+        tile.setColor(tileColor);
+        tile.setCornerRadius(dp(5));
+        android.graphics.drawable.LayerDrawable layers =
+            new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{tile, icon});
+        layers.setLayerGravity(1, android.view.Gravity.CENTER);
+        layers.setLayerWidth(1, dp(24));
+        layers.setLayerHeight(1, dp(24));
+        button.setBackground(layers);
+        button.setCompoundDrawables(null, null, null, null);
+        button.setText("");
+        button.setGravity(android.view.Gravity.CENTER);
+        button.setPadding(0, 0, 0, 0);
+        button.setMinWidth(0);
+        button.setMinHeight(0);
+        button.setContentDescription(button.getContentDescription());
     }
 
     private void updateConnectionButton(boolean connected) {
