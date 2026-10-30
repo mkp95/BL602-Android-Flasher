@@ -67,7 +67,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             }
             public void onNothingSelected(android.widget.AdapterView<?> parent) {}
         });
-        viewMode.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"Text (UTF-8)","Hex"}));
+        viewMode.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"Text (UTF-8)","Hex","Hex + ASCII"}));
         newlineMode.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"CR + LF","LF","CR","None"}));
         monitorPanel = findViewById(R.id.monitorPanel);
         flashPanel = findViewById(R.id.flashPanel);
@@ -167,12 +167,21 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     }
 
     @Override public void onNewData(byte[] data) {
+        final int mode = viewMode == null ? 0 : viewMode.getSelectedItemPosition();
         final String text;
-        if (viewMode != null && viewMode.getSelectedItemPosition() == 1) {
-            StringBuilder hex = new StringBuilder();
-            for (byte value : data) hex.append(String.format(Locale.US, "%02X ", value & 0xff));
-            hex.append('\n');
-            text = hex.toString();
+        if (mode == 1 || mode == 2) {
+            StringBuilder hex = new StringBuilder(data.length * 3 + 32);
+            StringBuilder ascii = new StringBuilder(data.length);
+            for (byte value : data) {
+                int b = value & 0xff;
+                hex.append(String.format(Locale.US, "%02X ", b));
+                ascii.append(b >= 0x20 && b <= 0x7e ? (char)b : '.');
+            }
+            if (mode == 2) {
+                text = hex.toString().trim() + "  |  " + ascii + "\\n";
+            } else {
+                text = hex.toString() + "\\n";
+            }
         } else {
             text = new String(data, java.nio.charset.StandardCharsets.UTF_8);
         }
