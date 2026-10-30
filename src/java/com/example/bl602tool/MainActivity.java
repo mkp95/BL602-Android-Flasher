@@ -30,6 +30,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     private ScrollView terminalScroll;
     private boolean terminalAtLineStart = true;
     private EditText sendText, baudRate;
+    private Spinner baudPreset, viewMode, newlineMode;
     private LinearLayout monitorPanel;
     private ScrollView flashPanel, settingsPanel;
     private final List<Uri> firmwareUris = new ArrayList<>();
@@ -48,6 +49,22 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         flashLog = findViewById(R.id.flashLog);
         sendText = findViewById(R.id.sendText);
         baudRate = findViewById(R.id.baudRate);
+        baudPreset = findViewById(R.id.baudPreset);
+        viewMode = findViewById(R.id.viewMode);
+        newlineMode = findViewById(R.id.newlineMode);
+        String[] baudChoices = {"9600","19200","38400","57600","74880","115200","230400","460800","500000","921600","1000000","1500000","2000000","Custom…"};
+        baudPreset.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, baudChoices));
+        baudPreset.setSelection(8);
+        baudPreset.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                boolean custom = position == baudChoices.length - 1;
+                baudRate.setVisibility(custom ? View.VISIBLE : View.GONE);
+                if (!custom) baudRate.setText(baudChoices[position]);
+            }
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+        });
+        viewMode.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"Text (UTF-8)","Hex"}));
+        newlineMode.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"CR + LF","LF","CR","None"}));
         monitorPanel = findViewById(R.id.monitorPanel);
         flashPanel = findViewById(R.id.flashPanel);
         settingsPanel = findViewById(R.id.settingsPanel);
@@ -59,7 +76,9 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         findViewById(R.id.send).setOnClickListener(v -> sendText());
         findViewById(R.id.copy).setOnClickListener(v -> copyTerminal());
         findViewById(R.id.paste).setOnClickListener(v -> pasteClipboard());
-        findViewById(R.id.clear).setOnClickListener(v -> terminal.setText(""));
+        findViewById(R.id.clear).setOnClickListener(v -> { terminal.setText(""); terminalAtLineStart = true; });
+        findViewById(R.id.toTop).setOnClickListener(v -> terminalScroll.fullScroll(View.FOCUS_UP));
+        findViewById(R.id.toBottom).setOnClickListener(v -> terminalScroll.fullScroll(View.FOCUS_DOWN));
         findViewById(R.id.pickFirmware).setOnClickListener(v -> pickFirmware());
         findViewById(R.id.startFlash).setOnClickListener(v -> startFlash());
         findViewById(R.id.dtr).setOnClickListener(v -> setDtr());
@@ -130,14 +149,26 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         if (port == null) { toast("Connect USB serial first."); return; }
         String s = sendText.getText().toString();
         try {
-            port.write((s + "\r\n").getBytes("UTF-8"), 1000);
+            String ending = "";
+            int nl = newlineMode.getSelectedItemPosition();
+            if (nl == 0) ending = "\r\n";
+            else if (nl == 1) ending = "\n";
+            else if (nl == 2) ending = "\r";
+            port.write((s + ending).getBytes("UTF-8"), 1000);
             appendTerminal("\nTX> " + s + "\n");
             sendText.setText("");
         } catch (Exception e) { toast("TX failed: " + e.getMessage()); }
     }
 
     @Override public void onNewData(byte[] data) {
-        final String text = new String(data, java.nio.charset.StandardCharsets.UTF_8);
+        final String text;
+        if (viewMode != null && viewMode.getSelectedItemPosition() == 1) {
+            StringBuilder hex = new StringBuilder();
+            for (byte value : data) hex.append(String.format(Locale.US, "%02X ", value & 0xff));
+            text = hex.toString();
+        } else {
+            text = new String(data, java.nio.charset.StandardCharsets.UTF_8);
+        }
         runOnUiThread(() -> appendTerminal(text));
     }
     @Override public void onRunError(Exception e) {
