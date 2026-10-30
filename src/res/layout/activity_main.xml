@@ -35,8 +35,9 @@
             android:layout_width="36dp" android:layout_height="40dp"/>
     </LinearLayout>
 
-    <TextView android:id="@+id/status" android:text="USB disconnected" android:textColor="#FFB4AB"
-        android:paddingLeft="12dp" android:paddingTop="3dp" android:paddingBottom="3dp"
+    <TextView android:id="@+id/status" android:text="●  USB DISCONNECTED" android:textColor="#FF8B8B"
+        android:textSize="12sp" android:singleLine="true" android:ellipsize="end"
+        android:paddingLeft="12dp" android:paddingRight="12dp" android:paddingTop="5dp" android:paddingBottom="5dp"
         android:background="#263746" android:layout_width="match_parent" android:layout_height="wrap_content"/>
 
     <LinearLayout android:id="@+id/modemStatusRow" android:orientation="horizontal"
