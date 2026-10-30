@@ -78,7 +78,15 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         baudRate.setText("500000");
         viewMode = findViewById(R.id.viewMode);
         newlineMode = findViewById(R.id.newlineMode);
-        viewMode.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"ASCII / UTF-8","Hexadecimal"}));\n        formatToggle = findViewById(R.id.formatToggle);\n        formatToggle.setOnClickListener(v -> setFormatMode(formatMode == 0 ? 1 : 0));\n        viewMode.setSelection(formatMode);\n        viewMode.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {\n            @Override public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) { setFormatMode(position); }\n            @Override public void onNothingSelected(android.widget.AdapterView<?> parent) { }\n        });\n        updateFormatToggle();
+        viewMode.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"ASCII / UTF-8","Hexadecimal"}));
+        formatToggle = findViewById(R.id.formatToggle);
+        formatToggle.setOnClickListener(v -> setFormatMode(formatMode == 0 ? 1 : 0));
+        viewMode.setSelection(formatMode);
+        viewMode.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) { setFormatMode(position); }
+            @Override public void onNothingSelected(android.widget.AdapterView<?> parent) { }
+        });
+        updateFormatToggle();
         newlineMode.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"CR + LF","LF","CR","None"}));
         connectButton = findViewById(R.id.connect);
         autoScrollButton = findViewById(R.id.autoScroll);
