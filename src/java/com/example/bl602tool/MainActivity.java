@@ -575,7 +575,8 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     }
 
     private void updateAutoScrollButton() {
-        autoScrollButton.setText(autoScroll ? "⇣" : "↕");
+        autoScrollButton.setText("");
+        setToolbarIcon(autoScrollButton, R.drawable.ic_scroll);
         autoScrollButton.setContentDescription(autoScroll ? "Auto-scroll on" : "Auto-scroll off");
         autoScrollButton.setBackgroundTintList(android.content.res.ColorStateList.valueOf(autoScroll ? 0xff167c70 : 0xff394957));
     }
