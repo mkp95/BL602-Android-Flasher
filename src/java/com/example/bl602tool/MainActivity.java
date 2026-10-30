@@ -9,6 +9,10 @@ import android.hardware.usb.UsbManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ScaleGestureDetector;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.widget.*;
 import android.app.AlertDialog;
 import android.content.ClipData;
@@ -31,7 +35,11 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     private ScrollView terminalScroll;
     private boolean terminalAtLineStart = true;
     private EditText sendText, baudRate;
-    private Spinner baudPreset, viewMode, newlineMode;
+    private Spinner viewMode, newlineMode;
+    private Button connectButton, autoScrollButton;
+    private boolean autoScroll = true;
+    private float terminalTextSize = 13f;
+    private ScaleGestureDetector scaleDetector;
     private LinearLayout monitorPanel;
     private ScrollView flashPanel, settingsPanel;
     private final List<Uri> firmwareUris = new ArrayList<>();
@@ -53,22 +61,32 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         flashLog = findViewById(R.id.flashLog);
         sendText = findViewById(R.id.sendText);
         baudRate = findViewById(R.id.baudRate);
-        baudPreset = findViewById(R.id.baudPreset);
+        baudRate.setText("500000");
         viewMode = findViewById(R.id.viewMode);
         newlineMode = findViewById(R.id.newlineMode);
-        String[] baudChoices = {"9600","19200","38400","57600","74880","115200","230400","460800","500000","921600","1000000","1500000","2000000","Custom…"};
-        baudPreset.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, baudChoices));
-        baudPreset.setSelection(8);
-        baudPreset.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
-            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
-                boolean custom = position == baudChoices.length - 1;
-                baudRate.setVisibility(custom ? View.VISIBLE : View.GONE);
-                if (!custom) baudRate.setText(baudChoices[position]);
-            }
-            public void onNothingSelected(android.widget.AdapterView<?> parent) {}
-        });
         viewMode.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"Text (UTF-8)","Hex","Hex + ASCII"}));
         newlineMode.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"CR + LF","LF","CR","None"}));
+        connectButton = findViewById(R.id.connect);
+        autoScrollButton = findViewById(R.id.autoScroll);
+        connectButton.setOnClickListener(v -> { if (port == null) connectUsb(); else disconnectUsb(); });
+        findViewById(R.id.clearTerminal).setOnClickListener(v -> { terminal.setText(""); terminalAtLineStart = true; });
+        autoScrollButton.setOnClickListener(v -> {
+            autoScroll = !autoScroll;
+            autoScrollButton.setText(autoScroll ? "Auto: On" : "Auto: Off");
+            if (autoScroll) terminalScroll.post(() -> terminalScroll.fullScroll(View.FOCUS_DOWN));
+        });
+        findViewById(R.id.baudControl).setOnClickListener(v -> showBaudPicker());
+        terminalTextSize = getSharedPreferences("terminal", MODE_PRIVATE).getFloat("textSize", 13f);
+        terminal.setTextSize(terminalTextSize);
+        scaleDetector = new ScaleGestureDetector(this, new ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            @Override public boolean onScale(ScaleGestureDetector detector) {
+                terminalTextSize = Math.max(8f, Math.min(28f, terminalTextSize * detector.getScaleFactor()));
+                terminal.setTextSize(terminalTextSize);
+                getSharedPreferences("terminal", MODE_PRIVATE).edit().putFloat("textSize", terminalTextSize).apply();
+                return true;
+            }
+        });
+        terminal.setOnTouchListener((v, event) -> { scaleDetector.onTouchEvent(event); return false; });
         monitorPanel = findViewById(R.id.monitorPanel);
         flashPanel = findViewById(R.id.flashPanel);
         settingsPanel = findViewById(R.id.settingsPanel);
@@ -76,8 +94,6 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         findViewById(R.id.backToTerminal).setOnClickListener(v -> showPanel(1));
         loadShortcuts();
         setupShortcuts();
-        findViewById(R.id.connect).setOnClickListener(v -> connectUsb());
-        findViewById(R.id.disconnect).setOnClickListener(v -> disconnectUsb());
         findViewById(R.id.send).setOnClickListener(v -> sendText());
 
         findViewById(R.id.pickFirmware).setOnClickListener(v -> pickFirmware());
@@ -132,6 +148,8 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             executor.submit(ioManager);
             status.setText("Connected: " + chosen.getDevice().getDeviceName() + " @ " + baud);
             status.setTextColor(0xff16803c);
+            connectButton.setText("Disconnect");
+            findViewById(R.id.baudControl).setEnabled(false);
             appendTerminal("\n[connected @ " + baud + " baud]\n");
             refreshModemStatus();
         } catch (Exception e) { toast("Connect failed: " + e.getMessage()); }
@@ -144,6 +162,8 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         } catch (Exception ignored) {}
         status.setText("USB disconnected");
         status.setTextColor(0xffb00020);
+        if (connectButton != null) connectButton.setText("Connect");
+        if (findViewById(R.id.baudControl) != null) findViewById(R.id.baudControl).setEnabled(true);
         appendTerminal("\n[disconnected]\n");
     }
 
@@ -157,7 +177,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             else if (nl == 1) ending = "\n";
             else if (nl == 2) ending = "\r";
             port.write((s + ending).getBytes("UTF-8"), 1000);
-            appendTerminal("\nTX> " + s + "\n");
+            appendTerminal("\nTX> " + s + "\n", 0xff65c7ff);
             if (!s.trim().isEmpty()) {
                 commandHistory.add(0, s);
                 while (commandHistory.size() > 100) commandHistory.remove(commandHistory.size() - 1);
@@ -186,42 +206,73 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             text = new String(data, java.nio.charset.StandardCharsets.UTF_8);
         }
         runOnUiThread(() -> {
-            appendTerminal(text);
+            appendTerminal(text, 0xff8ee68b);
             refreshModemStatus();
         });
     }
     @Override public void onRunError(Exception e) {
         runOnUiThread(() -> appendTerminal("\n[serial error: " + e.getMessage() + "]\n"));
     }
-    private void appendTerminal(String s) {
-        if (s == null || s.length() == 0) return;
-        final boolean followOutput = terminalScroll.getChildAt(0) != null
-            && terminalScroll.getChildAt(0).getBottom()
-                - (terminalScroll.getScrollY() + terminalScroll.getHeight()) <= dp(32);
+    private static final int TIMESTAMP_COLOR = 0xff77838f;
 
-        StringBuilder stamped = new StringBuilder(s.length() + 32);
+    private void appendTerminal(String s) {
+        appendTerminal(s, 0xffe0e0e0);
+    }
+
+    private void appendTerminal(String s, int dataColor) {
+        if (s == null || s.length() == 0) return;
+        SpannableStringBuilder output = new SpannableStringBuilder();
+        List<int[]> timestampRanges = new ArrayList<>();
         for (int i = 0; i < s.length(); i++) {
             if (terminalAtLineStart) {
-                if (logMode) stamped.append('[').append(new SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
-                    .format(new Date())).append("] ");
+                if (logMode) {
+                    int start = output.length();
+                    output.append(new SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault()).format(new Date()));
+                    timestampRanges.add(new int[]{start, output.length()});
+                    output.append("  ");
+                }
                 terminalAtLineStart = false;
             }
-            char c = s.charAt(i);
-            stamped.append(c);
-            if (c == '\n') terminalAtLineStart = true;
+            char ch = s.charAt(i);
+            output.append(ch);
+            if (ch == '\n') terminalAtLineStart = true;
         }
-        terminal.append(stamped);
-
-        // Bound memory and trim only complete lines.
+        output.setSpan(new ForegroundColorSpan(dataColor), 0, output.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        for (int[] range : timestampRanges) {
+            output.setSpan(new ForegroundColorSpan(TIMESTAMP_COLOR), range[0], range[1], Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        terminal.append(output);
         int excess = terminal.length() - 50000;
         if (excess > 0) {
             CharSequence text = terminal.getText();
             int cut = excess;
             while (cut < text.length() && text.charAt(cut) != '\n') cut++;
             if (cut < text.length()) cut++;
-            terminal.setText(text.subSequence(cut, text.length()));
+            if (cut < text.length()) terminal.getText().delete(0, cut);
         }
-        if (followOutput) terminalScroll.post(() -> terminalScroll.fullScroll(View.FOCUS_DOWN));
+        if (autoScroll) terminalScroll.post(() -> terminalScroll.fullScroll(View.FOCUS_DOWN));
+    }
+
+    private void showBaudPicker() {
+        String[] choices = {"9600","19200","38400","57600","74880","115200","230400","460800","500000","921600","1000000","1500000","2000000","Custom..."};
+        new AlertDialog.Builder(this).setTitle("UART baud rate").setItems(choices, (dialog, which) -> {
+            if (which == choices.length - 1) {
+                EditText custom = new EditText(this);
+                custom.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+                custom.setText(baudRate.getText());
+                new AlertDialog.Builder(this).setTitle("Custom baud rate").setView(custom)
+                    .setPositiveButton("Apply", (d, w) -> { baudRate.setText(custom.getText()); applyBaudLabel(); })
+                    .setNegativeButton("Cancel", null).show();
+            } else {
+                baudRate.setText(choices[which]);
+                applyBaudLabel();
+            }
+        }).show();
+    }
+
+    private void applyBaudLabel() {
+        String value = baudRate.getText().toString().trim();
+        ((Button)findViewById(R.id.baudControl)).setText(value.isEmpty() ? "Baud" : value);
     }
 
     private void showMenu(View anchor) {
