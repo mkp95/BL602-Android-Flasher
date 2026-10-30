@@ -133,6 +133,13 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         flashPanel.setVisibility(which == 0 ? View.VISIBLE : View.GONE);
         monitorPanel.setVisibility(which == 1 ? View.VISIBLE : View.GONE);
         settingsPanel.setVisibility(which == 2 ? View.VISIBLE : View.GONE);
+
+        // Keep connection and navigation available, but hide terminal-only controls while flashing.
+        int terminalVisibility = which == 1 ? View.VISIBLE : View.GONE;
+        findViewById(R.id.clearTerminal).setVisibility(terminalVisibility);
+        findViewById(R.id.formatToggle).setVisibility(terminalVisibility);
+        findViewById(R.id.autoScroll).setVisibility(terminalVisibility);
+        findViewById(R.id.modemStatusRow).setVisibility(which == 0 ? View.GONE : View.VISIBLE);
     }
 
     private int getBaud() {
@@ -487,9 +494,55 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             for (int n = 0; n < clip.getItemCount(); n++) firmwareUris.add(clip.getItemAt(n).getUri());
         } else if (data.getData() != null) firmwareUris.add(data.getData());
         StringBuilder b = new StringBuilder();
-        for (Uri u : firmwareUris) b.append(u.getLastPathSegment()).append("\n");
+        long totalBytes = 0;
+        for (int n = 0; n < firmwareUris.size(); n++) {
+            Uri u = firmwareUris.get(n);
+            String name = getDisplayName(u);
+            long size = getFileSize(u);
+            if (size > 0) totalBytes += size;
+            b.append(n + 1).append(". ").append(name).append("\n");
+            b.append("   ").append(size >= 0 ? formatFileSize(size) : "Size unavailable").append("\n");
+        }
+        if (firmwareUris.size() > 1) b.append("\n").append(firmwareUris.size()).append(" files · ").append(formatFileSize(totalBytes));
         firmwareList.setText(b.length() == 0 ? "No firmware selected" : b.toString());
     }
+    private String getDisplayName(Uri uri) {
+        android.database.Cursor cursor = null;
+        try {
+            cursor = getContentResolver().query(uri, new String[]{android.provider.OpenableColumns.DISPLAY_NAME}, null, null, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                int column = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME);
+                if (column >= 0) return cursor.getString(column);
+            }
+        } catch (Exception ignored) {
+        } finally {
+            if (cursor != null) cursor.close();
+        }
+        String fallback = uri.getLastPathSegment();
+        return fallback == null ? "Firmware file" : fallback;
+    }
+
+    private long getFileSize(Uri uri) {
+        android.database.Cursor cursor = null;
+        try {
+            cursor = getContentResolver().query(uri, new String[]{android.provider.OpenableColumns.SIZE}, null, null, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                int column = cursor.getColumnIndex(android.provider.OpenableColumns.SIZE);
+                if (column >= 0 && !cursor.isNull(column)) return cursor.getLong(column);
+            }
+        } catch (Exception ignored) {
+        } finally {
+            if (cursor != null) cursor.close();
+        }
+        return -1;
+    }
+
+    private String formatFileSize(long bytes) {
+        if (bytes < 1024) return bytes + " B";
+        if (bytes < 1024L * 1024L) return String.format(Locale.US, "%.1f KB", bytes / 1024.0);
+        return String.format(Locale.US, "%.2f MB", bytes / (1024.0 * 1024.0));
+    }
+
     private void startFlash() {
         if (port == null) { toast("Connect to the CH340 first."); return; }
         if (firmwareUris.isEmpty()) { toast("Select at least one BIN file."); return; }
