@@ -629,7 +629,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             }
             char ch = s.charAt(i);
             output.append(ch);
-            if (ch == '\\n') flashLogAtLineStart = true;
+            if (ch == '\n') flashLogAtLineStart = true;
         }
         output.setSpan(new ForegroundColorSpan(0xff8ee68b), 0, output.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         for (int[] range : timestamps) output.setSpan(new ForegroundColorSpan(TIMESTAMP_COLOR), range[0], range[1], Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
