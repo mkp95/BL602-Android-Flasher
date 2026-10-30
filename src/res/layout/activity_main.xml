@@ -27,6 +27,7 @@
     </ScrollView>
     <LinearLayout android:id="@+id/monitorPanel" android:orientation="vertical" android:visibility="gone" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
         <LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content">
+            <Spinner android:id="@+id/viewMode" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
             <Button android:id="@+id/connect" android:text="Connect" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
             <Button android:id="@+id/disconnect" android:text="Disconnect" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
         </LinearLayout>
@@ -38,6 +39,8 @@
             <Button android:id="@+id/send" android:text="SEND" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
         </LinearLayout>
         <LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content">
+            <Button android:id="@+id/toTop" android:text="Top" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
+            <Button android:id="@+id/toBottom" android:text="Bottom" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
             <Button android:id="@+id/copy" android:text="Copy all" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
             <Button android:id="@+id/paste" android:text="Paste" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
             <Button android:id="@+id/clear" android:text="Clear" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
@@ -46,7 +49,11 @@
     <ScrollView android:id="@+id/settingsPanel" android:visibility="gone" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
         <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content">
             <TextView android:text="UART settings" android:textStyle="bold" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-            <EditText android:id="@+id/baudRate" android:inputType="number" android:text="500000" android:hint="Baud rate" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <TextView android:text="Baud rate" android:paddingTop="8dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <Spinner android:id="@+id/baudPreset" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <EditText android:id="@+id/baudRate" android:visibility="gone" android:inputType="number" android:text="500000" android:hint="Custom baud rate" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <TextView android:text="Transmit newline" android:paddingTop="12dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <Spinner android:id="@+id/newlineMode" android:layout_width="match_parent" android:layout_height="wrap_content"/>
             <TextView android:text="Data: 8 bits · Parity: none · Stop: 1" android:layout_width="match_parent" android:layout_height="wrap_content"/>
             <TextView android:text="Reset controls (when CH340 board exposes DTR/RTS)" android:textStyle="bold" android:paddingTop="12dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
             <Button android:id="@+id/dtr" android:text="Toggle DTR" android:layout_width="match_parent" android:layout_height="wrap_content"/>
