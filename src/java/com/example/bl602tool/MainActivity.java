@@ -77,7 +77,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         flashLog = findViewById(R.id.flashLog);
         sendText = findViewById(R.id.sendText);
         baudRate = findViewById(R.id.baudRate);
-        baudRate.setText("500000");
+        baudRate.setText(getSharedPreferences("terminal", MODE_PRIVATE).getString("baudRate", "9600"));
         viewMode = findViewById(R.id.viewMode);
         newlineMode = findViewById(R.id.newlineMode);
         viewMode.setAdapter(createDarkSpinnerAdapter(new String[]{"ASCII / UTF-8","Hexadecimal"}));
@@ -258,6 +258,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         int selected = mode == 1 ? 1 : 0;
         boolean changed = formatMode != selected;
         formatMode = selected;
+        getSharedPreferences("terminal", MODE_PRIVATE).edit().putInt("formatMode", formatMode).apply();
         if (syncSpinner && viewMode != null && viewMode.getSelectedItemPosition() != selected) {
             viewMode.setSelection(selected);
         }
@@ -695,7 +696,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         setToolbarIcon((Button)findViewById(R.id.clearTerminal), R.drawable.ic_delete);
         setToolbarIcon((Button)findViewById(R.id.clearSend), R.drawable.ic_clear_text);
         setToolbarIcon((Button)findViewById(R.id.autoScroll), R.drawable.ic_scroll);
-        setToolbarIcon((Button)findViewById(R.id.formatToggle), R.drawable.ic_format);
+        updateFormatToggle();
         setToolbarIcon((Button)findViewById(R.id.menu), R.drawable.ic_menu);
         int[] accent={R.id.send,R.id.startFlash};
         for(int id:accent){ Button b=findViewById(id); if(b!=null)b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xff167c70)); }
