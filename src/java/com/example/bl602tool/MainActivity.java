@@ -133,6 +133,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             status.setText("Connected: " + chosen.getDevice().getDeviceName() + " @ " + baud);
             status.setTextColor(0xff16803c);
             appendTerminal("\n[connected @ " + baud + " baud]\n");
+            refreshModemStatus();
         } catch (Exception e) { toast("Connect failed: " + e.getMessage()); }
     }
 
@@ -170,7 +171,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         if (viewMode != null && viewMode.getSelectedItemPosition() == 1) {
             StringBuilder hex = new StringBuilder();
             for (byte value : data) hex.append(String.format(Locale.US, "%02X ", value & 0xff));
-            hex.append('\\n');
+            hex.append('\n');
             text = hex.toString();
         } else {
             text = new String(data, java.nio.charset.StandardCharsets.UTF_8);
