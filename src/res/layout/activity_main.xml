@@ -55,7 +55,7 @@
             </LinearLayout>
             <TextView android:id="@+id/firmwareList" android:text="No firmware selected" android:textColor="#FFFFFF" android:padding="8dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
             <TextView android:text="Flash address assignment is not available yet." android:textColor="#CCCCCC" android:textSize="12sp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-            <Button android:id="@+id/backToTerminal" android:text="← Terminal" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <Button android:id="@+id/flashBack" android:text="← Terminal" android:layout_width="match_parent" android:layout_height="wrap_content"/>
             <ProgressBar android:id="@+id/progress" style="?android:attr/progressBarStyleHorizontal" android:max="100" android:progress="0" android:layout_width="match_parent" android:layout_height="wrap_content"/>
             <TextView android:id="@+id/flashLog" android:text="Flash log" android:textColor="#FFFFFF" android:padding="8dp" android:textIsSelectable="true" android:layout_width="match_parent" android:layout_height="wrap_content"/>
         </LinearLayout>
