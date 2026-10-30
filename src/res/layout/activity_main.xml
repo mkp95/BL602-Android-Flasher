@@ -30,7 +30,9 @@
             <Button android:id="@+id/connect" android:text="Connect" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
             <Button android:id="@+id/disconnect" android:text="Disconnect" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
         </LinearLayout>
-        <TextView android:id="@+id/terminal" android:text="Serial output appears here..." android:background="#101820" android:textColor="#B8F5C8" android:typeface="monospace" android:textSize="12sp" android:padding="8dp" android:textIsSelectable="true" android:gravity="bottom" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" />
+        <ScrollView android:id="@+id/terminalScroll" android:fillViewport="true" android:background="#101820" android:scrollbars="vertical" android:fadeScrollbars="false" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
+            <TextView android:id="@+id/terminal" android:text="Serial output appears here..." android:textColor="#B8F5C8" android:typeface="monospace" android:textSize="12sp" android:padding="8dp" android:textIsSelectable="true" android:gravity="top|start" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        </ScrollView>
         <LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content">
             <EditText android:id="@+id/sendText" android:hint="Enter command" android:singleLine="true" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
             <Button android:id="@+id/send" android:text="SEND" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
