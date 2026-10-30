@@ -200,6 +200,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             port.setRTS(rtsState);
             ioManager = new SerialInputOutputManager(port, this);
             executor.submit(ioManager);
+                        flashOwnsPort = false;
             status.setText("●  USB CONNECTED     " + baud + " baud");
             status.setTextColor(0xff54d69a);
             connectButton.setText("");
@@ -634,12 +635,14 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         flashLog.setText("");
         flashLogAtLineStart = true;
         flashOwnsPort = true;
+        connectButton.setEnabled(false);
         if (ioManager != null) { ioManager.stop(); ioManager = null; }
         status.setText("●  FLASHING @ 200000");
         status.setTextColor(0xffffc66d);
         new Thread(() -> {
             boolean success = false;
             try {
+                Thread.sleep(250);
                 byte[] firmware = readUriBytes(firmwareUri, 0x140000);
                 byte[] loader = readAssetBytes("bl602/eflash_loader_40m.bin");
                 byte[] para = readAssetBytes("bl602/flash_para.bin");
@@ -670,6 +673,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
                         status.setTextColor(completed ? 0xff54d69a : 0xffffc66d);
                     }
                     flashButton.setEnabled(true);
+                    connectButton.setEnabled(true);
                     appendFlashLog(completed ? "Terminal UART restored to " + restoreBaud + " baud.\n" : "Terminal UART restored to " + restoreBaud + " baud.\n");
                 });
             }
