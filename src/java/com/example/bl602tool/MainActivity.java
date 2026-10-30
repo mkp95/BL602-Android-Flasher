@@ -218,7 +218,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         if (formatMode == 1) {
             StringBuilder hex = new StringBuilder(data.length * 3 + 1);
             for (byte value : data) hex.append(String.format(Locale.US, "%02X ", value & 0xff));
-            return hex.toString().trim() + "\\n";
+            return hex.toString().trim() + "\n";
         }
         return new String(data, java.nio.charset.StandardCharsets.UTF_8);
     }
