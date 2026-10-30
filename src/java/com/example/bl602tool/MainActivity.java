@@ -581,60 +581,42 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     private void appendFlashLog(String s) { flashLog.append(s); }
 
     private void setToolbarIcon(Button button, int resourceId) {
+        setToolbarIcon(button, resourceId, 0xfff1f5f9);
+    }
+
+    private void setToolbarIcon(Button button, int resourceId, int tint) {
         if (button == null) return;
         android.graphics.drawable.Drawable icon = getDrawable(resourceId);
         if (icon == null) return;
         icon = icon.mutate();
-        icon.setTint(0xfff1f5f9);
-        android.graphics.drawable.GradientDrawable tile = new android.graphics.drawable.GradientDrawable();
-        int tileColor = button.getId() == R.id.autoScroll && autoScroll ? 0xff167c70 : 0xff394957;
-        tile.setColor(tileColor);
-        tile.setCornerRadius(dp(5));
-        android.graphics.drawable.LayerDrawable layers =
-            new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{tile, icon});
-        layers.setLayerGravity(1, android.view.Gravity.CENTER);
-        layers.setLayerWidth(1, dp(24));
-        layers.setLayerHeight(1, dp(24));
-        button.setBackground(layers);
-        button.setCompoundDrawables(null, null, null, null);
+        icon.setTint(tint);
+        int size = dp(22);
+        icon.setBounds(0, 0, size, size);
+        button.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+        button.setCompoundDrawables(icon, null, null, null);
         button.setText("");
         button.setGravity(android.view.Gravity.CENTER);
         button.setPadding(0, 0, 0, 0);
         button.setMinWidth(0);
         button.setMinHeight(0);
-        button.setContentDescription(button.getContentDescription());
     }
 
     private void updateConnectionButton(boolean connected) {
         if (connectButton == null) return;
-        setToolbarIcon(connectButton, R.drawable.ic_usb_plug);
-        connectButton.setBackgroundTintList(null);
-        android.graphics.drawable.GradientDrawable tile = new android.graphics.drawable.GradientDrawable();
-        tile.setColor(connected ? 0xff167c70 : 0xff394957);
-        tile.setCornerRadius(dp(5));
-        android.graphics.drawable.Drawable icon = getDrawable(R.drawable.ic_usb_plug).mutate();
-        icon.setTint(0xfff1f5f9);
-        android.graphics.drawable.LayerDrawable layers = new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{tile, icon});
-        layers.setLayerGravity(1, android.view.Gravity.CENTER);
-        layers.setLayerWidth(1, dp(24)); layers.setLayerHeight(1, dp(24));
-        connectButton.setBackground(layers);
-        connectButton.setContentDescription(connected ? "Connected. Tap to disconnect USB serial" : "Disconnected. Tap to connect USB serial");
+        setToolbarIcon(connectButton, R.drawable.ic_usb_plug,
+            connected ? 0xff35d39a : 0xffa0acb8);
+        connectButton.setContentDescription(connected
+            ? "USB connected. Tap to disconnect"
+            : "USB disconnected. Tap to connect");
     }
 
     private void updateAutoScrollButton() {
-        autoScrollButton.setText("");
-        setToolbarIcon(autoScrollButton, R.drawable.ic_scroll);
-        autoScrollButton.setContentDescription(autoScroll ? "Auto-scroll on" : "Auto-scroll off");
-        autoScrollButton.setBackgroundTintList(null);
-        android.graphics.drawable.GradientDrawable tile = new android.graphics.drawable.GradientDrawable();
-        tile.setColor(autoScroll ? 0xff167c70 : 0xff394957);
-        tile.setCornerRadius(dp(5));
-        android.graphics.drawable.Drawable icon = getDrawable(R.drawable.ic_scroll).mutate();
-        icon.setTint(0xfff1f5f9);
-        android.graphics.drawable.LayerDrawable layers = new android.graphics.drawable.LayerDrawable(new android.graphics.drawable.Drawable[]{tile, icon});
-        layers.setLayerGravity(1, android.view.Gravity.CENTER);
-        layers.setLayerWidth(1, dp(24)); layers.setLayerHeight(1, dp(24));
-        autoScrollButton.setBackground(layers);
+        if (autoScrollButton == null) return;
+        setToolbarIcon(autoScrollButton, R.drawable.ic_scroll,
+            autoScroll ? 0xff35d39a : 0xffa0acb8);
+        autoScrollButton.setContentDescription(autoScroll
+            ? "Auto-scroll on. Tap to pause"
+            : "Auto-scroll paused. Tap to resume");
     }
 
     private void updateModemOutputButtons() {
