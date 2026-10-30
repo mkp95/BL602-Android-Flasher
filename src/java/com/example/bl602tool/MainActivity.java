@@ -46,6 +46,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     private ScrollView flashPanel, settingsPanel;
     private final List<Uri> firmwareUris = new ArrayList<>();
     private boolean dtrState, rtsState, logMode = true;
+    private volatile boolean flashOwnsPort = false;
     private final List<String> commandHistory = new ArrayList<>();
     private final List<TerminalRecord> terminalRecords = new ArrayList<>();
     private int formatMode = 0; // 0 = ASCII/UTF-8, 1 = hexadecimal
@@ -318,6 +319,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     }
 
     @Override public void onRunError(Exception e) {
+        if (flashOwnsPort) return;
         final UsbSerialPort failedPort = port;
         final String message = e == null || e.getMessage() == null ? "I/O stopped" : e.getMessage();
         runOnUiThread(() -> {
@@ -631,6 +633,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         progress.setProgress(0);
         flashLog.setText("");
         flashLogAtLineStart = true;
+        flashOwnsPort = true;
         if (ioManager != null) { ioManager.stop(); ioManager = null; }
         status.setText("●  FLASHING @ 200000");
         status.setTextColor(0xffffc66d);
