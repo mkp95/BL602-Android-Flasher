@@ -669,6 +669,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
                     if (port == activePort) {
                         ioManager = new SerialInputOutputManager(activePort, this);
                         executor.submit(ioManager);
+                        flashOwnsPort = false;
                         status.setText(completed ? "●  USB CONNECTED     " + restoreBaud + " baud" : "●  USB CONNECTED     " + restoreBaud + " baud (flash stopped)");
                         status.setTextColor(completed ? 0xff54d69a : 0xffffc66d);
                     }
