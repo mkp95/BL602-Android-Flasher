@@ -140,7 +140,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
 
         // Keep connection and navigation available, but hide terminal-only controls while flashing.
         int terminalVisibility = which == 1 ? View.VISIBLE : View.GONE;
-        findViewById(R.id.clearTerminal).setVisibility(terminalVisibility);
+        findViewById(R.id.terminalActions).setVisibility(terminalVisibility);
         findViewById(R.id.formatToggle).setVisibility(terminalVisibility);
         findViewById(R.id.autoScroll).setVisibility(terminalVisibility);
         findViewById(R.id.modemStatusRow).setVisibility(which == 0 ? View.GONE : View.VISIBLE);
@@ -686,10 +686,11 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     }
 
     private void applyInterfaceTheme() {
-        int[] ids={R.id.connect,R.id.clearTerminal,R.id.formatToggle,R.id.autoScroll,R.id.baudControl,R.id.menu,R.id.send,R.id.m1,R.id.m2,R.id.m3,R.id.m4,R.id.m5,R.id.m6,R.id.m7,R.id.pickFirmware,R.id.startFlash,R.id.backToTerminal,R.id.flashBack};
+        int[] ids={R.id.connect,R.id.clearTerminal,R.id.clearSend,R.id.formatToggle,R.id.autoScroll,R.id.baudControl,R.id.menu,R.id.send,R.id.m1,R.id.m2,R.id.m3,R.id.m4,R.id.m5,R.id.m6,R.id.m7,R.id.pickFirmware,R.id.startFlash,R.id.backToTerminal,R.id.flashBack};
         for(int id:ids){ Button b=findViewById(id); if(b!=null){ b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xff263746)); b.setTextColor(0xfff1f5f9); b.setAllCaps(false); } }
         setToolbarIcon((Button)findViewById(R.id.connect), R.drawable.ic_usb_plug);
         setToolbarIcon((Button)findViewById(R.id.clearTerminal), R.drawable.ic_delete);
+        setToolbarIcon((Button)findViewById(R.id.clearSend), R.drawable.ic_delete);
         setToolbarIcon((Button)findViewById(R.id.autoScroll), R.drawable.ic_scroll);
         setToolbarIcon((Button)findViewById(R.id.formatToggle), R.drawable.ic_format);
         setToolbarIcon((Button)findViewById(R.id.menu), R.drawable.ic_menu);
