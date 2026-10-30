@@ -1,0 +1,5 @@
+This project scaffold is original integration code.
+The referenced blflashcommand project is licensed under Apache License 2.0.
+If its source or binary assets are copied into this project, preserve its license
+and applicable NOTICE/attribution requirements. No upstream loader binaries are
+included in this starter archive.
