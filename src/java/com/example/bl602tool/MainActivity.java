@@ -614,7 +614,27 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         appendFlashLog("No erase or write command was sent.\n");
         toast("Flashing is not enabled in this starter build.");
     }
-    private void appendFlashLog(String s) { if (s != null) flashLog.append(new SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault()).format(new Date()) + "  " + s); }
+    private boolean flashLogAtLineStart = true;
+    private void appendFlashLog(String s) {
+        if (s == null || s.length() == 0) return;
+        SpannableStringBuilder output = new SpannableStringBuilder();
+        List<int[]> timestamps = new ArrayList<>();
+        for (int i = 0; i < s.length(); i++) {
+            if (flashLogAtLineStart) {
+                int start = output.length();
+                output.append(new SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault()).format(new Date()));
+                timestamps.add(new int[]{start, output.length()});
+                output.append("  ");
+                flashLogAtLineStart = false;
+            }
+            char ch = s.charAt(i);
+            output.append(ch);
+            if (ch == '\\n') flashLogAtLineStart = true;
+        }
+        output.setSpan(new ForegroundColorSpan(0xff8ee68b), 0, output.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        for (int[] range : timestamps) output.setSpan(new ForegroundColorSpan(TIMESTAMP_COLOR), range[0], range[1], Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        flashLog.append(output);
+    }
 
     private void adjustTerminalZoom(float delta) { terminalTextSize = Math.max(8f, Math.min(28f, terminalTextSize + delta)); terminal.setTextSize(terminalTextSize); getSharedPreferences("terminal", MODE_PRIVATE).edit().putFloat("textSize", terminalTextSize).apply(); }
     private void adjustFlashLogZoom(float delta) { float size = Math.max(8f, Math.min(28f, flashLog.getTextSize() / getResources().getDisplayMetrics().scaledDensity + delta)); flashLog.setTextSize(size); getSharedPreferences("terminal", MODE_PRIVATE).edit().putFloat("flashLogTextSize", size).apply(); }
