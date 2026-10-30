@@ -31,7 +31,7 @@
         android:paddingLeft="12dp" android:paddingTop="3dp" android:paddingBottom="3dp"
         android:background="#263746" android:layout_width="match_parent" android:layout_height="wrap_content"/>
 
-    <HorizontalScrollView android:scrollbars="none" android:background="#18232D"
+    <HorizontalScrollView android:id="@+id/modemStatusRow" android:scrollbars="none" android:background="#18232D"
         android:layout_width="match_parent" android:layout_height="44dp">
         <LinearLayout android:orientation="horizontal" android:gravity="center_vertical"
             android:paddingLeft="4dp" android:paddingRight="4dp"
