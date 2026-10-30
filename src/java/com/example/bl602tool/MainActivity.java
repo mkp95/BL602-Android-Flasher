@@ -356,7 +356,12 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
 
     private void applyBaudLabel() {
         String value = baudRate.getText().toString().trim();
-        ((Button)findViewById(R.id.baudControl)).setText(value.isEmpty() ? "Baud" : value);
+        Button control = findViewById(R.id.baudControl);
+        control.setText(value.isEmpty() ? "Baud" : value);
+        control.setGravity(android.view.Gravity.CENTER);
+        control.setPadding(0, 0, 0, 0);
+        control.setTextSize(14);
+        control.setMinWidth(0);
     }
 
     private void showMenu(View anchor) {
@@ -498,16 +503,19 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         } else if (data.getData() != null) firmwareUris.add(data.getData());
         StringBuilder b = new StringBuilder();
         long totalBytes = 0;
+        int knownSizes = 0;
+        b.append("Selected files (").append(firmwareUris.size()).append(")");
         for (int n = 0; n < firmwareUris.size(); n++) {
             Uri u = firmwareUris.get(n);
             String name = getDisplayName(u);
             long size = getFileSize(u);
-            if (size > 0) totalBytes += size;
-            b.append(n + 1).append(". ").append(name).append("\n");
-            b.append("   ").append(size >= 0 ? formatFileSize(size) : "Size unavailable").append("\n");
+            if (size >= 0) { totalBytes += size; knownSizes++; }
+            b.append("\n\n").append("▣  ").append(name);
+            b.append("\n    ").append(size >= 0 ? formatFileSize(size) + "  (" + String.format(Locale.US, "%,d", size) + " bytes)" : "Size unavailable");
         }
-        if (firmwareUris.size() > 1) b.append("\n").append(firmwareUris.size()).append(" files · ").append(formatFileSize(totalBytes));
-        firmwareList.setText(b.length() == 0 ? "No firmware selected" : b.toString());
+        b.append("\n\nTotal size: ");
+        b.append(knownSizes == firmwareUris.size() ? formatFileSize(totalBytes) : "partially unavailable");
+        firmwareList.setText(firmwareUris.isEmpty() ? "No firmware selected" : b.toString());
     }
     private String getDisplayName(Uri uri) {
         android.database.Cursor cursor = null;
@@ -670,7 +678,8 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         int[] accent={R.id.send,R.id.startFlash};
         for(int id:accent){ Button b=findViewById(id); if(b!=null)b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xff167c70)); }
         int[] labels={R.id.firmwareList,R.id.flashLog};
-        for(int id:labels){ TextView t=findViewById(id); if(t!=null)t.setTextColor(0xffe6edf3); }
+        for(int id:labels){ TextView t=findViewById(id); if(t!=null)t.setTextColor(0xfff1f5f9); }
+        applyBaudLabel();
     }
 
     private void setDtr() {
