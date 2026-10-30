@@ -140,6 +140,9 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
 
         // Keep connection and navigation available, but hide terminal-only controls while flashing.
         int terminalVisibility = which == 1 ? View.VISIBLE : View.GONE;
+        findViewById(R.id.clearTerminal).setVisibility(terminalVisibility);
+        findViewById(R.id.formatToggle).setVisibility(terminalVisibility);
+        findViewById(R.id.autoScroll).setVisibility(terminalVisibility);
         findViewById(R.id.modemStatusRow).setVisibility(which == 0 ? View.GONE : View.VISIBLE);
     }
 
@@ -511,19 +514,25 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     }
     private void pickFirmware() {
         Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        i.setType("*/*");
+        i.setType("application/octet-stream");
         i.addCategory(Intent.CATEGORY_OPENABLE);
-        i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false);
         startActivityForResult(i, PICK_FILES);
     }
     @Override protected void onActivityResult(int request, int result, Intent data) {
         super.onActivityResult(request, result, data);
         if (request != PICK_FILES || result != RESULT_OK || data == null) return;
         firmwareUris.clear();
-        if (data.getClipData() != null) {
-            ClipData clip = data.getClipData();
-            for (int n = 0; n < clip.getItemCount(); n++) firmwareUris.add(clip.getItemAt(n).getUri());
-        } else if (data.getData() != null) firmwareUris.add(data.getData());
+        if (data.getData() != null) {
+            Uri selected = data.getData();
+            String selectedName = getDisplayName(selected);
+            if (selectedName == null || !selectedName.toLowerCase(Locale.ROOT).endsWith(".bin")) {
+                firmwareList.setText("Please select a single .bin firmware image.");
+                toast("Only one .bin firmware image is supported.");
+                return;
+            }
+            firmwareUris.add(selected);
+        }
         StringBuilder b = new StringBuilder();
         long totalBytes = 0;
         int knownSizes = 0;
