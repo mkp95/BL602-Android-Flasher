@@ -259,9 +259,18 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
 
     private void updateFormatToggle() {
         if (formatToggle != null) {
-            formatToggle.setText("");
-            setToolbarIcon(formatToggle, R.drawable.ic_format);
-            formatToggle.setContentDescription(formatMode == 0 ? "Receive format: ASCII / UTF-8" : "Receive format: hexadecimal");
+            // Show the active receive representation directly: Aa for text, 0x for hex.
+            formatToggle.setCompoundDrawables(null, null, null, null);
+            formatToggle.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+            formatToggle.setText(formatMode == 0 ? "Aa" : "0x");
+            formatToggle.setTextColor(formatMode == 0 ? 0xff35d39a : 0xffffc36b);
+            formatToggle.setTextSize(16);
+            formatToggle.setTypeface(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD);
+            formatToggle.setGravity(android.view.Gravity.CENTER);
+            formatToggle.setPadding(0, 0, 0, 0);
+            formatToggle.setContentDescription(formatMode == 0
+                ? "Text mode active. Tap to switch to hexadecimal"
+                : "Hexadecimal mode active. Tap to switch to text");
         }
     }
 
