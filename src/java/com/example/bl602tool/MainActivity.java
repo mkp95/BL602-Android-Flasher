@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.*;
+import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 
@@ -34,7 +35,10 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     private LinearLayout monitorPanel;
     private ScrollView flashPanel, settingsPanel;
     private final List<Uri> firmwareUris = new ArrayList<>();
-    private boolean dtrState, rtsState;
+    private boolean dtrState, rtsState, logMode = true;
+    private final List<String> commandHistory = new ArrayList<>();
+    private final String[] shortcutNames = new String[7];
+    private final String[] shortcutCommands = new String[7];
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -68,22 +72,19 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         monitorPanel = findViewById(R.id.monitorPanel);
         flashPanel = findViewById(R.id.flashPanel);
         settingsPanel = findViewById(R.id.settingsPanel);
-        findViewById(R.id.tabFlash).setOnClickListener(v -> showPanel(0));
-        findViewById(R.id.tabMonitor).setOnClickListener(v -> showPanel(1));
-        findViewById(R.id.tabSettings).setOnClickListener(v -> showPanel(2));
+        findViewById(R.id.menu).setOnClickListener(v -> showMenu(v));
+        findViewById(R.id.backToTerminal).setOnClickListener(v -> showPanel(1));
+        loadShortcuts();
+        setupShortcuts();
         findViewById(R.id.connect).setOnClickListener(v -> connectUsb());
         findViewById(R.id.disconnect).setOnClickListener(v -> disconnectUsb());
         findViewById(R.id.send).setOnClickListener(v -> sendText());
-        findViewById(R.id.copy).setOnClickListener(v -> copyTerminal());
-        findViewById(R.id.paste).setOnClickListener(v -> pasteClipboard());
-        findViewById(R.id.clear).setOnClickListener(v -> { terminal.setText(""); terminalAtLineStart = true; });
-        findViewById(R.id.toTop).setOnClickListener(v -> terminalScroll.fullScroll(View.FOCUS_UP));
-        findViewById(R.id.toBottom).setOnClickListener(v -> terminalScroll.fullScroll(View.FOCUS_DOWN));
+
         findViewById(R.id.pickFirmware).setOnClickListener(v -> pickFirmware());
         findViewById(R.id.startFlash).setOnClickListener(v -> startFlash());
         findViewById(R.id.dtr).setOnClickListener(v -> setDtr());
         findViewById(R.id.rts).setOnClickListener(v -> setRts());
-        showPanel(0);
+        showPanel(1);
     }
 
     private void showPanel(int which) {
@@ -156,6 +157,10 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             else if (nl == 2) ending = "\r";
             port.write((s + ending).getBytes("UTF-8"), 1000);
             appendTerminal("\nTX> " + s + "\n");
+            if (!s.trim().isEmpty()) {
+                commandHistory.add(0, s);
+                while (commandHistory.size() > 100) commandHistory.remove(commandHistory.size() - 1);
+            }
             sendText.setText("");
         } catch (Exception e) { toast("TX failed: " + e.getMessage()); }
     }
@@ -165,7 +170,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         if (viewMode != null && viewMode.getSelectedItemPosition() == 1) {
             StringBuilder hex = new StringBuilder();
             for (byte value : data) hex.append(String.format(Locale.US, "%02X ", value & 0xff));
-            hex.append("\\n");
+            hex.append('\\n');
             text = hex.toString();
         } else {
             text = new String(data, java.nio.charset.StandardCharsets.UTF_8);
@@ -184,7 +189,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         StringBuilder stamped = new StringBuilder(s.length() + 32);
         for (int i = 0; i < s.length(); i++) {
             if (terminalAtLineStart) {
-                stamped.append('[').append(new SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
+                if (logMode) stamped.append('[').append(new SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
                     .format(new Date())).append("] ");
                 terminalAtLineStart = false;
             }
@@ -204,6 +209,112 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             terminal.setText(text.subSequence(cut, text.length()));
         }
         if (followOutput) terminalScroll.post(() -> terminalScroll.fullScroll(View.FOCUS_DOWN));
+    }
+
+    private void showMenu(View anchor) {
+        PopupMenu menu = new PopupMenu(this, anchor);
+        menu.getMenu().add("History");
+        menu.getMenu().add(logMode ? "Log mode: On" : "Log mode: Off");
+        menu.getMenu().add("Settings");
+        menu.getMenu().add("Flash tools");
+        menu.getMenu().add("Copy terminal");
+        menu.getMenu().add("Paste");
+        menu.getMenu().add("Clear terminal");
+        menu.setOnMenuItemClickListener(item -> {
+            String action = item.getTitle().toString();
+            if (action.equals("History")) showHistory();
+            else if (action.startsWith("Log mode:")) {
+                logMode = !logMode;
+                toast("Timestamp log mode " + (logMode ? "enabled" : "disabled"));
+            } else if (action.equals("Settings")) showPanel(2);
+            else if (action.equals("Flash tools")) showPanel(0);
+            else if (action.equals("Copy terminal")) copyTerminal();
+            else if (action.equals("Paste")) pasteClipboard();
+            else if (action.equals("Clear terminal")) { terminal.setText(""); terminalAtLineStart = true; }
+            return true;
+        });
+        menu.show();
+    }
+
+    private void showHistory() {
+        if (commandHistory.isEmpty()) { toast("No sent commands yet."); return; }
+        String[] items = commandHistory.toArray(new String[0]);
+        new AlertDialog.Builder(this).setTitle("Command history")
+            .setItems(items, (dialog, which) -> {
+                sendText.setText(items[which]);
+                sendText.setSelection(sendText.length());
+                showPanel(1);
+            }).setNegativeButton("Close", null).show();
+    }
+
+    private void loadShortcuts() {
+        android.content.SharedPreferences prefs = getSharedPreferences("uart_shortcuts", MODE_PRIVATE);
+        for (int i = 0; i < 7; i++) {
+            shortcutNames[i] = prefs.getString("name" + i, "M" + (i + 1));
+            shortcutCommands[i] = prefs.getString("command" + i, "");
+        }
+    }
+
+    private void setupShortcuts() {
+        int[] ids = {R.id.m1, R.id.m2, R.id.m3, R.id.m4, R.id.m5, R.id.m6, R.id.m7};
+        for (int i = 0; i < ids.length; i++) {
+            final int slot = i;
+            Button button = findViewById(ids[i]);
+            button.setText(shortcutNames[i]);
+            button.setOnClickListener(v -> {
+                if (shortcutCommands[slot].isEmpty()) editShortcut(slot);
+                else transmitCommand(shortcutCommands[slot]);
+            });
+            button.setOnLongClickListener(v -> { editShortcut(slot); return true; });
+        }
+    }
+
+    private void editShortcut(int slot) {
+        LinearLayout fields = new LinearLayout(this);
+        fields.setOrientation(LinearLayout.VERTICAL);
+        fields.setPadding(dp(20), dp(8), dp(20), 0);
+        EditText name = new EditText(this);
+        name.setSingleLine(true);
+        name.setHint("Button label");
+        name.setText(shortcutNames[slot]);
+        EditText command = new EditText(this);
+        command.setSingleLine(true);
+        command.setHint("Command to transmit");
+        command.setText(shortcutCommands[slot]);
+        fields.addView(name);
+        fields.addView(command);
+        new AlertDialog.Builder(this).setTitle("Edit shortcut M" + (slot + 1))
+            .setView(fields).setPositiveButton("Save", (d, w) -> {
+                String n = name.getText().toString().trim();
+                shortcutNames[slot] = n.isEmpty() ? "M" + (slot + 1) : n;
+                shortcutCommands[slot] = command.getText().toString();
+                getSharedPreferences("uart_shortcuts", MODE_PRIVATE).edit()
+                    .putString("name" + slot, shortcutNames[slot])
+                    .putString("command" + slot, shortcutCommands[slot]).apply();
+                setupShortcuts();
+            }).setNeutralButton("Clear", (d, w) -> {
+                shortcutNames[slot] = "M" + (slot + 1);
+                shortcutCommands[slot] = "";
+                getSharedPreferences("uart_shortcuts", MODE_PRIVATE).edit()
+                    .remove("name" + slot).remove("command" + slot).apply();
+                setupShortcuts();
+            }).setNegativeButton("Cancel", null).show();
+    }
+
+    private void transmitCommand(String command) {
+        sendText.setText(command);
+        sendText.setSelection(sendText.length());
+        sendText();
+    }
+
+    private void refreshModemStatus() {
+        if (port == null) return;
+        try {
+            ((TextView)findViewById(R.id.cts)).setText(port.getCTS() ? "CTS ●" : "CTS ○");
+            ((TextView)findViewById(R.id.dsr)).setText(port.getDSR() ? "DSR ●" : "DSR ○");
+            ((TextView)findViewById(R.id.cd)).setText(port.getCD() ? "CD ●" : "CD ○");
+            ((TextView)findViewById(R.id.ri)).setText(port.getRI() ? "RI ●" : "RI ○");
+        } catch (Exception ignored) { }
     }
 
     private int dp(int value) {
