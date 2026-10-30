@@ -514,7 +514,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     }
     private void pickFirmware() {
         Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        i.setType("application/octet-stream");
+        i.setType("*/*");
         i.addCategory(Intent.CATEGORY_OPENABLE);
         i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false);
         startActivityForResult(i, PICK_FILES);
