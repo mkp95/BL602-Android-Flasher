@@ -29,7 +29,7 @@
 
     <TextView android:id="@+id/status" android:text="USB disconnected" android:textColor="#FFB4AB"
         android:paddingLeft="12dp" android:paddingTop="3dp" android:paddingBottom="3dp"
-        android:background="#287D35" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+        android:background="#263746" android:layout_width="match_parent" android:layout_height="wrap_content"/>
 
     <HorizontalScrollView android:scrollbars="none" android:background="#18232D"
         android:layout_width="match_parent" android:layout_height="44dp">
