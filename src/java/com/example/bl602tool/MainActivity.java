@@ -157,6 +157,8 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         findViewById(R.id.autoScroll).setVisibility(terminalVisibility);
         findViewById(R.id.zoomOut).setVisibility(terminalVisibility);
         findViewById(R.id.zoomIn).setVisibility(terminalVisibility);
+        findViewById(R.id.zoomOut).setVisibility(terminalVisibility);
+        findViewById(R.id.zoomIn).setVisibility(terminalVisibility);
         findViewById(R.id.modemStatusRow).setVisibility(which == 0 ? View.GONE : View.VISIBLE);
     }
 
