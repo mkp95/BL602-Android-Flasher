@@ -1,0 +1,10 @@
+<resources>
+    <style name="AppTheme" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:colorAccent">#18A999</item>
+        <item name="android:colorControlActivated">#18A999</item>
+        <item name="android:popupMenuStyle">@style/AppPopupMenu</item>
+    </style>
+    <style name="AppPopupMenu" parent="@android:style/Widget.Material.PopupMenu">
+        <item name="android:popupBackground">@drawable/popup_background</item>
+    </style>
+</resources>
