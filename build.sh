@@ -44,7 +44,7 @@ if [[ ! -f "$KEYSTORE" ]]; then
   keytool -genkeypair -v -keystore "$KEYSTORE" -storepass android -keypass android -alias androiddebugkey -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -validity 10000
 fi
 "$BT/apksigner" sign --ks "$KEYSTORE" --ks-pass pass:android --key-pass pass:android --out "$WORK/BlFlashDroid-debug.apk" "$WORK/aligned.apk"
-"$BT/apksigner" verify "$WORK/BL602-UART-Tool-debug.apk"
+"$BT/apksigner" verify "$WORK/BlFlashDroid-debug.apk"
 mkdir -p dist
-cp "$WORK/BL602-UART-Tool-debug.apk" dist/
-echo "APK ready: dist/BL602-UART-Tool-debug.apk"
+cp "$WORK/BlFlashDroid-debug.apk" dist/
+echo "APK ready: dist/BlFlashDroid-debug.apk"
