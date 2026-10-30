@@ -563,7 +563,6 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             icon.setTint(0xfff1f5f9);
             android.graphics.drawable.GradientDrawable tile = new android.graphics.drawable.GradientDrawable();
             int tileColor = 0xff394957;
-            if (button.getId() == R.id.connect && serialPort != null) tileColor = 0xff167c70;
             if (button.getId() == R.id.autoScroll && autoScroll) tileColor = 0xff167c70;
             tile.setColor(tileColor);
             tile.setCornerRadius(dp(5));
