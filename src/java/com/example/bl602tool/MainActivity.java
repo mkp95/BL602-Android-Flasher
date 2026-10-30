@@ -2,6 +2,7 @@ package com.example.bl602tool;
 
 import android.app.Activity;
 import android.content.*;
+import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.net.Uri;
