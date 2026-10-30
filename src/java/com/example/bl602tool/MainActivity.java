@@ -165,10 +165,10 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     private int getBaud() {
         try {
             int value = Integer.parseInt(baudRate.getText().toString().trim());
-            if (value < 1200 || value > 3000000) throw new NumberFormatException();
+            if (value < 1200 || value > 200000) throw new NumberFormatException();
             return value;
         } catch (Exception e) {
-            throw new IllegalArgumentException("Enter a baud rate from 1200 to 3000000.");
+            throw new IllegalArgumentException("BL602 UART baud rate must be between 1200 and 200000.");
         }
     }
 
@@ -384,14 +384,14 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     }
 
     private void showBaudPicker() {
-        String[] choices = {"9600","19200","38400","57600","74880","115200","230400","460800","500000","921600","1000000","1500000","2000000","Custom..."};
+        String[] choices = {"9600","19200","38400","57600","74880","115200","200000","Custom..."};
         new AlertDialog.Builder(this).setTitle("UART baud rate").setItems(choices, (dialog, which) -> {
             if (which == choices.length - 1) {
                 EditText custom = new EditText(this);
                 custom.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
                 custom.setText(baudRate.getText());
-                new AlertDialog.Builder(this).setTitle("Custom baud rate").setView(custom)
-                    .setPositiveButton("Apply", (d, w) -> { baudRate.setText(custom.getText()); getSharedPreferences("terminal", MODE_PRIVATE).edit().putString("baudRate", custom.getText().toString()).apply(); applyBaudLabel(); })
+                new AlertDialog.Builder(this).setTitle("Custom baud rate (max 200000)").setView(custom)
+                    .setPositiveButton("Apply", (d, w) -> { try { int rate = Integer.parseInt(custom.getText().toString().trim()); if (rate < 1200 || rate > 200000) throw new NumberFormatException(); baudRate.setText(String.valueOf(rate)); getSharedPreferences("terminal", MODE_PRIVATE).edit().putString("baudRate", String.valueOf(rate)).apply(); applyBaudLabel(); } catch (Exception ex) { toast("BL602 UART baud rate must be between 1200 and 200000."); } })
                     .setNegativeButton("Cancel", null).show();
             } else {
                 baudRate.setText(choices[which]);
