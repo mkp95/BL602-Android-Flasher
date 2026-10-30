@@ -45,6 +45,20 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     private final List<Uri> firmwareUris = new ArrayList<>();
     private boolean dtrState, rtsState, logMode = true;
     private final List<String> commandHistory = new ArrayList<>();
+    private final List<TerminalRecord> terminalRecords = new ArrayList<>();
+    private int formatMode = 0; // 0 = ASCII/UTF-8, 1 = hexadecimal
+    private Button formatToggle;
+
+    private static class TerminalRecord {
+        final String text;
+        final byte[] received;
+        final int color;
+        TerminalRecord(String text, byte[] received, int color) {
+            this.text = text;
+            this.received = received;
+            this.color = color;
+        }
+    }
     private final String[] shortcutNames = new String[7];
     private final String[] shortcutCommands = new String[7];
 
@@ -64,12 +78,12 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         baudRate.setText("500000");
         viewMode = findViewById(R.id.viewMode);
         newlineMode = findViewById(R.id.newlineMode);
-        viewMode.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"Text (UTF-8)","Hex","Hex + ASCII"}));
+        viewMode.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"ASCII / UTF-8","Hexadecimal"}));\n        formatToggle = findViewById(R.id.formatToggle);\n        formatToggle.setOnClickListener(v -> setFormatMode(formatMode == 0 ? 1 : 0));\n        viewMode.setSelection(formatMode);\n        viewMode.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {\n            @Override public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) { setFormatMode(position); }\n            @Override public void onNothingSelected(android.widget.AdapterView<?> parent) { }\n        });\n        updateFormatToggle();
         newlineMode.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, new String[]{"CR + LF","LF","CR","None"}));
         connectButton = findViewById(R.id.connect);
         autoScrollButton = findViewById(R.id.autoScroll);
         connectButton.setOnClickListener(v -> { if (port == null) connectUsb(); else disconnectUsb(); });
-        findViewById(R.id.clearTerminal).setOnClickListener(v -> { terminal.setText(""); terminalAtLineStart = true; });
+        findViewById(R.id.clearTerminal).setOnClickListener(v -> clearTerminal());
         autoScrollButton.setOnClickListener(v -> {
             autoScroll = !autoScroll;
             autoScrollButton.setText(autoScroll ? "Auto: On" : "Auto: Off");
@@ -187,29 +201,64 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     }
 
     @Override public void onNewData(byte[] data) {
-        final int mode = viewMode == null ? 0 : viewMode.getSelectedItemPosition();
-        final String text;
-        if (mode == 1 || mode == 2) {
-            StringBuilder hex = new StringBuilder(data.length * 3 + 32);
-            StringBuilder ascii = new StringBuilder(data.length);
-            for (byte value : data) {
-                int b = value & 0xff;
-                hex.append(String.format(Locale.US, "%02X ", b));
-                ascii.append(b >= 0x20 && b <= 0x7e ? (char)b : '.');
-            }
-            if (mode == 2) {
-                text = hex.toString().trim() + "\n" + ascii + "\n";
-            } else {
-                text = hex.toString() + "\n";
-            }
-        } else {
-            text = new String(data, java.nio.charset.StandardCharsets.UTF_8);
-        }
+        final byte[] received = data.clone();
         runOnUiThread(() -> {
-            appendTerminal(text, 0xff8ee68b);
+            appendReceivedData(received);
             refreshModemStatus();
         });
     }
+
+    private void appendReceivedData(byte[] data) {
+        terminalRecords.add(new TerminalRecord(null, data.clone(), 0xff8ee68b));
+        trimTerminalRecords();
+        appendTerminalRendered(formatReceivedData(data), 0xff8ee68b);
+    }
+
+    private String formatReceivedData(byte[] data) {
+        if (formatMode == 1) {
+            StringBuilder hex = new StringBuilder(data.length * 3 + 1);
+            for (byte value : data) hex.append(String.format(Locale.US, "%02X ", value & 0xff));
+            return hex.toString().trim() + "\\n";
+        }
+        return new String(data, java.nio.charset.StandardCharsets.UTF_8);
+    }
+
+    private void setFormatMode(int mode) {
+        int selected = mode == 1 ? 1 : 0;
+        if (formatMode == selected && viewMode.getSelectedItemPosition() == selected) {
+            updateFormatToggle();
+            return;
+        }
+        formatMode = selected;
+        if (viewMode.getSelectedItemPosition() != selected) viewMode.setSelection(selected);
+        updateFormatToggle();
+        rerenderTerminal();
+    }
+
+    private void updateFormatToggle() {
+        if (formatToggle != null) formatToggle.setText(formatMode == 0 ? "ASCII" : "HEX");
+    }
+
+    private void clearTerminal() {
+        terminalRecords.clear();
+        terminal.setText("");
+        terminalAtLineStart = true;
+    }
+
+    private void trimTerminalRecords() {
+        while (terminalRecords.size() > 5000) terminalRecords.remove(0);
+    }
+
+    private void rerenderTerminal() {
+        terminal.setText("");
+        terminalAtLineStart = true;
+        for (TerminalRecord record : terminalRecords) {
+            String content = record.received == null ? record.text : formatReceivedData(record.received);
+            appendTerminalRendered(content, record.color);
+        }
+        if (autoScroll) terminalScroll.post(() -> terminalScroll.fullScroll(View.FOCUS_DOWN));
+    }
+
     @Override public void onRunError(Exception e) {
         runOnUiThread(() -> appendTerminal("\n[serial error: " + e.getMessage() + "]\n"));
     }
@@ -220,6 +269,13 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     }
 
     private void appendTerminal(String s, int dataColor) {
+        if (s == null || s.length() == 0) return;
+        terminalRecords.add(new TerminalRecord(s, null, dataColor));
+        trimTerminalRecords();
+        appendTerminalRendered(s, dataColor);
+    }
+
+    private void appendTerminalRendered(String s, int dataColor) {
         if (s == null || s.length() == 0) return;
         SpannableStringBuilder output = new SpannableStringBuilder();
         List<int[]> timestampRanges = new ArrayList<>();
@@ -235,7 +291,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             }
             char ch = s.charAt(i);
             output.append(ch);
-            if (ch == '\n') terminalAtLineStart = true;
+            if (ch == '\\n') terminalAtLineStart = true;
         }
         output.setSpan(new ForegroundColorSpan(dataColor), 0, output.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         for (int[] range : timestampRanges) {
@@ -246,7 +302,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         if (excess > 0) {
             CharSequence text = terminal.getText();
             int cut = excess;
-            while (cut < text.length() && text.charAt(cut) != '\n') cut++;
+            while (cut < text.length() && text.charAt(cut) != '\\n') cut++;
             if (cut < text.length()) cut++;
             if (cut < text.length()) terminal.getText().delete(0, cut);
         }
@@ -294,7 +350,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             else if (action.equals("Flash tools")) showPanel(0);
             else if (action.equals("Copy terminal")) copyTerminal();
             else if (action.equals("Paste")) pasteClipboard();
-            else if (action.equals("Clear terminal")) { terminal.setText(""); terminalAtLineStart = true; }
+            else if (action.equals("Clear terminal")) clearTerminal();
             return true;
         });
         menu.show();
