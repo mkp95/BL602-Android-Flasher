@@ -180,7 +180,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             port.setRTS(rtsState);
             ioManager = new SerialInputOutputManager(port, this);
             executor.submit(ioManager);
-            status.setText("● USB CONNECTED  ·  " + baud + " baud");
+            status.setText("●  USB CONNECTED     " + baud + " baud");
             status.setTextColor(0xff54d69a);
             connectButton.setText("");
             connectButton.setContentDescription("Disconnect USB serial");
@@ -196,7 +196,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             if (ioManager != null) { ioManager.stop(); ioManager = null; }
             if (port != null) { port.close(); port = null; }
         } catch (Exception ignored) {}
-        status.setText("● USB DISCONNECTED");
+        status.setText("●  USB DISCONNECTED");
         status.setTextColor(0xffff8b8b);
         if (connectButton != null) { updateConnectionButton(false); }
         if (findViewById(R.id.baudControl) != null) findViewById(R.id.baudControl).setEnabled(true);
@@ -259,8 +259,9 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
 
     private void updateFormatToggle() {
         if (formatToggle != null) {
-            formatToggle.setText(formatMode == 0 ? "Aa" : "0x");
-            formatToggle.setContentDescription(formatMode == 0 ? "ASCII receive format" : "Hexadecimal receive format");
+            formatToggle.setText("");
+            setToolbarIcon(formatToggle, R.drawable.ic_format);
+            formatToggle.setContentDescription(formatMode == 0 ? "Receive format: ASCII / UTF-8" : "Receive format: hexadecimal");
         }
     }
 
