@@ -299,7 +299,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             }
             char ch = s.charAt(i);
             output.append(ch);
-            if (ch == '\\n') terminalAtLineStart = true;
+            if (ch == '\n') terminalAtLineStart = true;
         }
         output.setSpan(new ForegroundColorSpan(dataColor), 0, output.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         for (int[] range : timestampRanges) {
@@ -310,7 +310,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         if (excess > 0) {
             CharSequence text = terminal.getText();
             int cut = excess;
-            while (cut < text.length() && text.charAt(cut) != '\\n') cut++;
+            while (cut < text.length() && text.charAt(cut) != '\n') cut++;
             if (cut < text.length()) cut++;
             if (cut < text.length()) terminal.getText().delete(0, cut);
         }
