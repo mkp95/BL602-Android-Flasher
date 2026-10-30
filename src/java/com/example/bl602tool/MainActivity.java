@@ -360,7 +360,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     }
 
     private void showMenu(View anchor) {
-        PopupMenu menu = new PopupMenu(this, anchor);
+        PopupMenu menu = new PopupMenu(new android.view.ContextThemeWrapper(this, R.style.AppTheme), anchor);
         menu.getMenu().add("History");
         menu.getMenu().add(logMode ? "Log mode: On" : "Log mode: Off");
         menu.getMenu().add("Settings");
