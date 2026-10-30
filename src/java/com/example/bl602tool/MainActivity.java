@@ -303,7 +303,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             appendTerminal("[USB disconnected — tap the plug to reconnect]\\n");
         });
     }
-    private static final int TIMESTAMP_COLOR = 0xff77838f;
+    private static final int TIMESTAMP_COLOR = 0xffa0acb8;
 
     private void appendTerminal(String s) {
         appendTerminal(s, 0xffe0e0e0);
@@ -323,12 +323,12 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         List<int[]> timestampRanges = new ArrayList<>();
         for (int i = 0; i < s.length(); i++) {
             if (terminalAtLineStart) {
-                if (logMode) {
-                    int start = output.length();
-                    output.append(new SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault()).format(new Date()));
-                    timestampRanges.add(new int[]{start, output.length()});
-                    output.append("  ");
-                }
+                // Always prefix each terminal line with its arrival time.
+                // Keep timestamps independent of the optional log-mode menu setting.
+                int start = output.length();
+                output.append(new SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault()).format(new Date()));
+                timestampRanges.add(new int[]{start, output.length()});
+                output.append("  ");
                 terminalAtLineStart = false;
             }
             char ch = s.charAt(i);
