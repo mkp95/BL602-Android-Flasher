@@ -448,10 +448,10 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     private void refreshModemStatus() {
         if (port == null) return;
         try {
-            ((TextView)findViewById(R.id.cts)).setText(port.getCTS() ? "CTS ●" : "CTS ○");
-            ((TextView)findViewById(R.id.dsr)).setText(port.getDSR() ? "DSR ●" : "DSR ○");
-            ((TextView)findViewById(R.id.cd)).setText(port.getCD() ? "CD ●" : "CD ○");
-            ((TextView)findViewById(R.id.ri)).setText(port.getRI() ? "RI ●" : "RI ○");
+            setStatusIndicator((TextView)findViewById(R.id.cts), "CTS", port.getCTS());
+            setStatusIndicator((TextView)findViewById(R.id.dsr), "DSR", port.getDSR());
+            setStatusIndicator((TextView)findViewById(R.id.cd), "CD", port.getCD());
+            setStatusIndicator((TextView)findViewById(R.id.ri), "RI", port.getRI());
         } catch (Exception ignored) { }
     }
 
@@ -510,6 +510,14 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         Button dtr = findViewById(R.id.dtr), rts = findViewById(R.id.rts);
         if (dtr != null) { setModemIndicator(dtr, "DTR", dtrState, true); }
         if (rts != null) { setModemIndicator(rts, "RTS", rtsState, true); }
+    }
+
+    private void setStatusIndicator(TextView view, String label, boolean enabled) {
+        String value = label + " ●";
+        android.text.SpannableString styled = new android.text.SpannableString(value);
+        styled.setSpan(new ForegroundColorSpan(enabled ? 0xff35d07f : 0xff8996a3), value.length()-1, value.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        view.setText(styled);
+        view.setTextColor(0xffe6edf3);
     }
 
     private void setModemIndicator(Button button, String label, boolean enabled, boolean clickable) {
