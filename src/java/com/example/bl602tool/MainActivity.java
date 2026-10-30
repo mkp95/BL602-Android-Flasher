@@ -180,7 +180,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             port.setRTS(rtsState);
             ioManager = new SerialInputOutputManager(port, this);
             executor.submit(ioManager);
-            status.setText("Connected: " + chosen.getDevice().getDeviceName() + " @ " + baud);
+            status.setText("● USB CONNECTED  ·  " + baud + " baud");
             status.setTextColor(0xff54d69a);
             connectButton.setText("");
             connectButton.setContentDescription("Disconnect USB serial");
@@ -196,9 +196,9 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             if (ioManager != null) { ioManager.stop(); ioManager = null; }
             if (port != null) { port.close(); port = null; }
         } catch (Exception ignored) {}
-        status.setText("USB disconnected");
+        status.setText("● USB DISCONNECTED");
         status.setTextColor(0xffff8b8b);
-        if (connectButton != null) { connectButton.setText("⏻"); connectButton.setContentDescription("Connect USB serial"); updateConnectionButton(false); }
+        if (connectButton != null) { updateConnectionButton(false); }
         if (findViewById(R.id.baudControl) != null) findViewById(R.id.baudControl).setEnabled(true);
         appendTerminal("\n[disconnected]\n");
     }
@@ -355,18 +355,18 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
 
     private void applyBaudLabel() {
         String value = baudRate.getText().toString().trim();
-        ((Button)findViewById(R.id.baudControl)).setText("⌁ " + (value.isEmpty() ? "Baud" : value));
+        ((Button)findViewById(R.id.baudControl)).setText(value.isEmpty() ? "Baud" : value);
     }
 
     private void showMenu(View anchor) {
         PopupMenu menu = new PopupMenu(this, anchor);
-        menu.getMenu().add("◷  History");
-        menu.getMenu().add(logMode ? "◉  Log mode: On" : "◯  Log mode: Off");
-        menu.getMenu().add("⚙  Settings");
-        menu.getMenu().add("⇧  Flash tools");
-        menu.getMenu().add("▣  Copy terminal");
-        menu.getMenu().add("▤  Paste");
-        menu.getMenu().add("⌫  Clear terminal");
+        menu.getMenu().add("History");
+        menu.getMenu().add(logMode ? "Log mode: On" : "Log mode: Off");
+        menu.getMenu().add("Settings");
+        menu.getMenu().add("Flash tools");
+        menu.getMenu().add("Copy terminal");
+        menu.getMenu().add("Paste");
+        menu.getMenu().add("Clear terminal");
         menu.setOnMenuItemClickListener(item -> {
             String action = item.getTitle().toString();
             if (action.contains("History")) showHistory();
@@ -571,7 +571,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         connectButton.setTextColor(0xfff1f5f9);
         connectButton.setText("");
         setToolbarIcon(connectButton, R.drawable.ic_power);
-        connectButton.setContentDescription(connected ? "Disconnect USB serial" : "Connect USB serial");
+        connectButton.setContentDescription(connected ? "Connected. Tap to disconnect USB serial" : "Disconnected. Tap to connect USB serial");
     }
 
     private void updateAutoScrollButton() {
@@ -582,9 +582,9 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     }
 
     private void updateModemOutputButtons() {
-        Button dtr = findViewById(R.id.dtr), rts = findViewById(R.id.rts);
-        if (dtr != null) { setModemIndicator(dtr, "DTR", dtrState, true); }
-        if (rts != null) { setModemIndicator(rts, "RTS", rtsState, true); }
+        TextView dtr = findViewById(R.id.dtr), rts = findViewById(R.id.rts);
+        if (dtr != null) setModemIndicator(dtr, "DTR", dtrState, true);
+        if (rts != null) setModemIndicator(rts, "RTS", rtsState, true);
     }
 
     private void setStatusIndicator(TextView view, String label, boolean enabled) {
@@ -593,16 +593,24 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         styled.setSpan(new ForegroundColorSpan(enabled ? 0xff35d07f : 0xff8996a3), value.length()-1, value.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         view.setText(styled);
         view.setTextColor(0xffe6edf3);
+        android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
+        bg.setColor(0xff263746); bg.setCornerRadius(dp(5)); view.setBackground(bg);
+        view.setGravity(android.view.Gravity.CENTER); view.setPadding(0, 0, 0, 0); view.setTextSize(10);
     }
 
-    private void setModemIndicator(Button button, String label, boolean enabled, boolean clickable) {
+    private void setModemIndicator(TextView button, String label, boolean enabled, boolean clickable) {
         String value = label + " ●";
         android.text.SpannableString styled = new android.text.SpannableString(value);
         styled.setSpan(new ForegroundColorSpan(enabled ? 0xff35d07f : 0xff8996a3), value.length()-1, value.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         button.setText(styled);
         button.setContentDescription(label + (clickable ? " toggle, currently " : " status: ") + (enabled ? "on" : "off"));
-        button.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xff263746));
         button.setTextColor(0xffe6edf3);
+        android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
+        bg.setColor(0xff263746); bg.setCornerRadius(dp(5));
+        button.setBackground(bg);
+        button.setGravity(android.view.Gravity.CENTER);
+        button.setPadding(0, 0, 0, 0);
+        button.setTextSize(10);
     }
 
     private ArrayAdapter<String> createDarkSpinnerAdapter(String[] values) {
@@ -619,6 +627,8 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         setToolbarIcon((Button)findViewById(R.id.connect), R.drawable.ic_power);
         setToolbarIcon((Button)findViewById(R.id.clearTerminal), R.drawable.ic_delete);
         setToolbarIcon((Button)findViewById(R.id.autoScroll), R.drawable.ic_scroll);
+        setToolbarIcon((Button)findViewById(R.id.formatToggle), R.drawable.ic_format);
+        setToolbarIcon((Button)findViewById(R.id.menu), R.drawable.ic_menu);
         int[] accent={R.id.send,R.id.startFlash};
         for(int id:accent){ Button b=findViewById(id); if(b!=null)b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xff167c70)); }
         int[] labels={R.id.firmwareList,R.id.flashLog};
