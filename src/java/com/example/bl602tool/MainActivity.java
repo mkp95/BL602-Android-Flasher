@@ -312,7 +312,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
             int cut = excess;
             while (cut < text.length() && text.charAt(cut) != '\n') cut++;
             if (cut < text.length()) cut++;
-            if (cut < text.length()) terminal.getText().delete(0, cut);
+            if (cut < text.length()) terminal.getEditableText().delete(0, cut);
         }
         if (autoScroll) terminalScroll.post(() -> terminalScroll.fullScroll(View.FOCUS_DOWN));
     }
