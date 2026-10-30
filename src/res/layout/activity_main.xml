@@ -16,6 +16,8 @@
                 android:minWidth="84dp" android:layout_width="wrap_content" android:layout_height="44dp"/>
             <Button android:id="@+id/clearTerminal" android:text="Clear" android:textAllCaps="false"
                 android:minWidth="64dp" android:layout_width="wrap_content" android:layout_height="44dp"/>
+            <Button android:id="@+id/formatToggle" android:text="ASCII" android:textAllCaps="false"
+                android:minWidth="68dp" android:layout_width="wrap_content" android:layout_height="44dp"/>
             <Button android:id="@+id/autoScroll" android:text="Auto: On" android:textAllCaps="false"
                 android:minWidth="82dp" android:layout_width="wrap_content" android:layout_height="44dp"/>
             <Button android:id="@+id/baudControl" android:text="500000" android:textAllCaps="false"
