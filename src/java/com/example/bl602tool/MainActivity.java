@@ -165,11 +165,11 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         // Bound memory and trim only complete lines.
         int excess = terminal.length() - 50000;
         if (excess > 0) {
-            android.text.Editable text = terminal.getEditableText();
+            CharSequence text = terminal.getText();
             int cut = excess;
             while (cut < text.length() && text.charAt(cut) != '\n') cut++;
             if (cut < text.length()) cut++;
-            text.delete(0, cut);
+            terminal.setText(text.subSequence(cut, text.length()));
         }
         if (followOutput) terminalScroll.post(() -> terminalScroll.fullScroll(View.FOCUS_DOWN));
     }
