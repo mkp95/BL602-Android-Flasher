@@ -56,16 +56,16 @@
     <ScrollView android:id="@+id/flashPanel" android:visibility="gone"
         android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
         <LinearLayout android:orientation="vertical" android:padding="12dp" android:layout_width="match_parent" android:layout_height="wrap_content">
-            <TextView android:text="BL602 firmware images" android:textColor="#FFFFFF" android:textStyle="bold" android:paddingTop="8dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <TextView android:text="BL602 firmware images" android:textColor="#F1F5F9" android:textStyle="bold" android:textSize="17sp" android:paddingTop="8dp" android:paddingBottom="10dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
             <LinearLayout android:orientation="horizontal" android:gravity="center" android:layout_width="match_parent" android:layout_height="wrap_content">
                 <Button android:id="@+id/pickFirmware" android:text="＋ BIN" android:contentDescription="Select firmware files" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:layout_marginRight="4dp"/>
                 <Button android:id="@+id/startFlash" android:text="⚡ FLASH" android:contentDescription="Start flashing" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:layout_marginLeft="4dp"/>
             </LinearLayout>
-            <TextView android:id="@+id/firmwareList" android:text="No firmware selected" android:textColor="#FFFFFF" android:padding="8dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-            <TextView android:text="Flash address assignment is not available yet." android:textColor="#CCCCCC" android:textSize="12sp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-            <Button android:id="@+id/flashBack" android:text="← Terminal" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <TextView android:id="@+id/firmwareList" android:text="No firmware selected" android:textColor="#F1F5F9" android:textSize="14sp" android:lineSpacingExtra="3dp" android:padding="12dp" android:layout_marginTop="8dp" android:layout_marginBottom="8dp" android:background="#203342" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <TextView android:text="Flash address assignment is not available yet." android:textColor="#B8C4CE" android:textSize="12sp" android:paddingBottom="8dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <Button android:id="@+id/flashBack" android:text="← Terminal" android:layout_width="match_parent" android:layout_height="44dp" android:layout_marginTop="4dp" android:layout_marginBottom="8dp"/>
             <ProgressBar android:id="@+id/progress" style="?android:attr/progressBarStyleHorizontal" android:max="100" android:progress="0" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-            <TextView android:id="@+id/flashLog" android:text="Flash log" android:textColor="#FFFFFF" android:padding="8dp" android:textIsSelectable="true" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <TextView android:id="@+id/flashLog" android:text="Flash log" android:textColor="#F1F5F9" android:padding="12dp" android:textIsSelectable="true" android:background="#14212B" android:layout_width="match_parent" android:layout_height="wrap_content"/>
         </LinearLayout>
     </ScrollView>
 
@@ -104,16 +104,16 @@
     <ScrollView android:id="@+id/settingsPanel" android:visibility="gone"
         android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
         <LinearLayout android:orientation="vertical" android:padding="12dp" android:layout_width="match_parent" android:layout_height="wrap_content">
-            <TextView android:text="UART settings" android:textColor="#FFFFFF" android:textStyle="bold" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <TextView android:text="UART settings" android:textColor="#F1F5F9" android:textSize="17sp" android:textStyle="bold" android:paddingBottom="8dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
             <TextView android:text="Baud rate is selected from the top toolbar." android:textColor="#FFFFFF" android:paddingTop="8dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
             <EditText android:id="@+id/baudRate" android:visibility="gone" android:inputType="number" android:text="500000" android:hint="Custom baud rate" android:layout_width="match_parent" android:layout_height="wrap_content"/>
             <TextView android:text="Receive format" android:textColor="#FFFFFF" android:paddingTop="12dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-            <Spinner android:id="@+id/viewMode" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <Spinner android:id="@+id/viewMode" android:background="#263746" android:popupBackground="#203342" android:layout_width="match_parent" android:layout_height="48dp"/>
             <TextView android:text="Transmit newline" android:textColor="#FFFFFF" android:paddingTop="12dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-            <Spinner android:id="@+id/newlineMode" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <Spinner android:id="@+id/newlineMode" android:background="#263746" android:popupBackground="#203342" android:layout_width="match_parent" android:layout_height="48dp"/>
             <TextView android:text="Data: 8 bits · Parity: none · Stop: 1" android:textColor="#FFFFFF" android:layout_width="match_parent" android:layout_height="wrap_content"/>
             <TextView android:text="Tap RTS/DTR to toggle output lines. CTS/DSR/CD/RI are status indicators." android:textColor="#CCCCCC" android:textStyle="bold" android:paddingTop="12dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-            <Button android:id="@+id/backToTerminal" android:text="← Terminal" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <Button android:id="@+id/backToTerminal" android:text="← Terminal" android:layout_width="match_parent" android:layout_height="44dp" android:layout_marginTop="8dp"/>
             <TextView android:text="Manual reset: hold BOOT, pulse RESET, release RESET, then release BOOT. Wiring varies by board." android:textColor="#CCCCCC" android:textSize="12sp" android:padding="8dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
         </LinearLayout>
     </ScrollView>
