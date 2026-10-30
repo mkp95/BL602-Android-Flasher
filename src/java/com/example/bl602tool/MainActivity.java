@@ -19,6 +19,7 @@ import com.hoho.android.usbserial.util.SerialInputOutputManager;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.text.SimpleDateFormat;
 
 public class MainActivity extends Activity implements SerialInputOutputManager.Listener {
     private static final int PICK_FILES = 41;
@@ -27,6 +28,8 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     private SerialInputOutputManager ioManager;
     private ExecutorService executor;
     private TextView status, terminal, firmwareList, flashLog;
+    private ScrollView terminalScroll;
+    private boolean terminalAtLineStart = true;
     private EditText sendText, baudRate;
     private LinearLayout monitorPanel;
     private ScrollView flashPanel, settingsPanel;
@@ -40,6 +43,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         executor = Executors.newSingleThreadExecutor();
         status = findViewById(R.id.status);
         terminal = findViewById(R.id.terminal);
+        terminalScroll = findViewById(R.id.terminalScroll);
         terminal.setMovementMethod(new ScrollingMovementMethod());
         firmwareList = findViewById(R.id.firmwareList);
         flashLog = findViewById(R.id.flashLog);
@@ -134,20 +138,45 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     }
 
     @Override public void onNewData(byte[] data) {
-        final String text = new String(data);
+        final String text = new String(data, java.nio.charset.StandardCharsets.UTF_8);
         runOnUiThread(() -> appendTerminal(text));
     }
     @Override public void onRunError(Exception e) {
         runOnUiThread(() -> appendTerminal("\n[serial error: " + e.getMessage() + "]\n"));
     }
     private void appendTerminal(String s) {
-        terminal.append(s);
+        if (s == null || s.length() == 0) return;
+        final boolean followOutput = terminalScroll.getChildAt(0) != null
+            && terminalScroll.getChildAt(0).getBottom()
+                - (terminalScroll.getScrollY() + terminalScroll.getHeight()) <= dp(32);
+
+        StringBuilder stamped = new StringBuilder(s.length() + 32);
+        for (int i = 0; i < s.length(); i++) {
+            if (terminalAtLineStart) {
+                stamped.append('[').append(new SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
+                    .format(new Date())).append("] ");
+                terminalAtLineStart = false;
+            }
+            char c = s.charAt(i);
+            stamped.append(c);
+            if (c == '\n') terminalAtLineStart = true;
+        }
+        terminal.append(stamped);
+
+        // Bound memory and trim only complete lines.
         int excess = terminal.length() - 50000;
-        if (excess > 0) terminal.setText(terminal.getText().subSequence(excess, terminal.length()));
-        terminal.post(() -> {
-            android.text.Layout l = terminal.getLayout();
-            if (l != null) terminal.scrollTo(0, l.getHeight());
-        });
+        if (excess > 0) {
+            android.text.Editable text = terminal.getEditableText();
+            int cut = excess;
+            while (cut < text.length() && text.charAt(cut) != '\n') cut++;
+            if (cut < text.length()) cut++;
+            text.delete(0, cut);
+        }
+        if (followOutput) terminalScroll.post(() -> terminalScroll.fullScroll(View.FOCUS_DOWN));
+    }
+
+    private int dp(int value) {
+        return (int)(value * getResources().getDisplayMetrics().density + 0.5f);
     }
     private void copyTerminal() {
         ClipboardManager cm = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
