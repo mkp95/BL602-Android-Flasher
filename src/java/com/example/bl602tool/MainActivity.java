@@ -178,9 +178,9 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
                 ascii.append(b >= 0x20 && b <= 0x7e ? (char)b : '.');
             }
             if (mode == 2) {
-                text = hex.toString().trim() + "  |  " + ascii + "\\n";
+                text = hex.toString().trim() + "  |  " + ascii + "\n";
             } else {
-                text = hex.toString() + "\\n";
+                text = hex.toString() + "\n";
             }
         } else {
             text = new String(data, java.nio.charset.StandardCharsets.UTF_8);
