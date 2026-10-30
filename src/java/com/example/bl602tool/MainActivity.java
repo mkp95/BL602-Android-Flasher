@@ -114,6 +114,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         settingsPanel = findViewById(R.id.settingsPanel);
         findViewById(R.id.menu).setOnClickListener(v -> showMenu(v));
         findViewById(R.id.backToTerminal).setOnClickListener(v -> showPanel(1));
+        findViewById(R.id.flashBack).setOnClickListener(v -> showPanel(1));
         loadShortcuts();
         setupShortcuts();
         findViewById(R.id.send).setOnClickListener(v -> sendText());
@@ -520,7 +521,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     }
 
     private void applyInterfaceTheme() {
-        int[] ids={R.id.connect,R.id.clearTerminal,R.id.formatToggle,R.id.autoScroll,R.id.baudControl,R.id.menu,R.id.send,R.id.m1,R.id.m2,R.id.m3,R.id.m4,R.id.m5,R.id.m6,R.id.m7,R.id.pickFirmware,R.id.startFlash,R.id.backToTerminal};
+        int[] ids={R.id.connect,R.id.clearTerminal,R.id.formatToggle,R.id.autoScroll,R.id.baudControl,R.id.menu,R.id.send,R.id.m1,R.id.m2,R.id.m3,R.id.m4,R.id.m5,R.id.m6,R.id.m7,R.id.pickFirmware,R.id.startFlash,R.id.backToTerminal,R.id.flashBack};
         for(int id:ids){ Button b=findViewById(id); if(b!=null){ b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xff263746)); b.setTextColor(0xfff1f5f9); b.setAllCaps(false); } }
         int[] accent={R.id.connect,R.id.send,R.id.startFlash};
         for(int id:accent){ Button b=findViewById(id); if(b!=null)b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xff167c70)); }
