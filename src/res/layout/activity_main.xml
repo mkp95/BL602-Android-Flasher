@@ -3,20 +3,27 @@
     android:orientation="vertical" android:background="#303030"
     android:layout_width="match_parent" android:layout_height="match_parent">
 
-    <LinearLayout android:orientation="horizontal" android:gravity="center_vertical"
-        android:background="#287D35" android:paddingLeft="12dp" android:paddingRight="8dp"
-        android:layout_width="match_parent" android:layout_height="56dp">
-        <TextView android:id="@+id/title" android:text="☰" android:textColor="#FFFFFF"
-            android:textSize="26sp" android:gravity="center" android:layout_width="48dp" android:layout_height="match_parent"/>
-        <TextView android:text="Terminal" android:textColor="#FFFFFF" android:textSize="22sp"
-            android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
-        <Button android:id="@+id/connect" android:text="▶" android:textColor="#FFFFFF"
-            android:backgroundTint="#287D35" android:minWidth="44dp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-        <Button android:id="@+id/disconnect" android:text="■" android:textColor="#FFFFFF"
-            android:backgroundTint="#287D35" android:minWidth="44dp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-        <Button android:id="@+id/menu" android:text="⋮" android:textColor="#FFFFFF"
-            android:textSize="24sp" android:backgroundTint="#287D35" android:minWidth="40dp" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-    </LinearLayout>
+    <HorizontalScrollView android:scrollbars="none" android:fillViewport="true"
+        android:background="#202B35" android:layout_width="match_parent" android:layout_height="56dp">
+        <LinearLayout android:orientation="horizontal" android:gravity="center_vertical"
+            android:paddingLeft="8dp" android:paddingRight="8dp"
+            android:layout_width="wrap_content" android:layout_height="match_parent">
+            <TextView android:text="BL602" android:textColor="#E8EEF5" android:textStyle="bold"
+                android:textSize="18sp" android:gravity="center_vertical"
+                android:paddingLeft="6dp" android:paddingRight="10dp"
+                android:layout_width="wrap_content" android:layout_height="match_parent"/>
+            <Button android:id="@+id/connect" android:text="Connect" android:textAllCaps="false"
+                android:minWidth="84dp" android:layout_width="wrap_content" android:layout_height="44dp"/>
+            <Button android:id="@+id/clearTerminal" android:text="Clear" android:textAllCaps="false"
+                android:minWidth="64dp" android:layout_width="wrap_content" android:layout_height="44dp"/>
+            <Button android:id="@+id/autoScroll" android:text="Auto: On" android:textAllCaps="false"
+                android:minWidth="82dp" android:layout_width="wrap_content" android:layout_height="44dp"/>
+            <Button android:id="@+id/baudControl" android:text="500000" android:textAllCaps="false"
+                android:minWidth="100dp" android:layout_width="wrap_content" android:layout_height="44dp"/>
+            <Button android:id="@+id/menu" android:text="More" android:textAllCaps="false"
+                android:minWidth="54dp" android:layout_width="wrap_content" android:layout_height="44dp"/>
+        </LinearLayout>
+    </HorizontalScrollView>
 
     <TextView android:id="@+id/status" android:text="USB disconnected" android:textColor="#FFB4AB"
         android:paddingLeft="12dp" android:paddingTop="3dp" android:paddingBottom="3dp"
@@ -85,8 +92,7 @@
         android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
         <LinearLayout android:orientation="vertical" android:padding="12dp" android:layout_width="match_parent" android:layout_height="wrap_content">
             <TextView android:text="UART settings" android:textColor="#FFFFFF" android:textStyle="bold" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-            <TextView android:text="Baud rate" android:textColor="#FFFFFF" android:paddingTop="8dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-            <Spinner android:id="@+id/baudPreset" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <TextView android:text="Baud rate is selected from the top toolbar." android:textColor="#FFFFFF" android:paddingTop="8dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
             <EditText android:id="@+id/baudRate" android:visibility="gone" android:inputType="number" android:text="500000" android:hint="Custom baud rate" android:layout_width="match_parent" android:layout_height="wrap_content"/>
             <TextView android:text="Receive format" android:textColor="#FFFFFF" android:paddingTop="12dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
             <Spinner android:id="@+id/viewMode" android:layout_width="match_parent" android:layout_height="wrap_content"/>
