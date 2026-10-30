@@ -1,0 +1,40 @@
+name: Build BL602 Android APK
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Set up Android SDK command-line tools
+        uses: android-actions/setup-android@v3
+      - name: Install SDK components
+        run: sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+      - name: Build APK without Gradle
+        env:
+          ANDROID_PLATFORM: android-35
+          ANDROID_BUILD_TOOLS: 35.0.0
+        run: |
+          chmod +x build.sh
+          ./build.sh
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: BL602-UART-Tool-debug
+          path: dist/BL602-UART-Tool-debug.apk
+          if-no-files-found: error
+          retention-days: 30
