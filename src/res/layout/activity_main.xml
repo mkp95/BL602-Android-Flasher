@@ -8,32 +8,32 @@
         android:layout_width="match_parent" android:layout_height="56dp">
         <TextView android:text="BL602" android:textColor="#E8EEF5" android:textStyle="bold"
             android:textSize="18sp" android:gravity="center_vertical"
-            android:paddingLeft="4dp" android:layout_width="58dp" android:layout_height="match_parent"/>
+            android:paddingLeft="4dp" android:layout_width="54dp" android:layout_height="match_parent"/>
         <Button android:id="@+id/connect" android:contentDescription="Connect USB serial"
             android:minWidth="0dp" android:minHeight="0dp" android:padding="0dp"
             android:insetLeft="0dp" android:insetRight="0dp" android:insetTop="0dp" android:insetBottom="0dp"
-            android:layout_width="36dp" android:layout_height="40dp"/>
+            android:layout_width="34dp" android:layout_height=" 40dp" android:layout_marginLeft="2dp" android:layout_marginRight="2dp"/>
         <Button android:id="@+id/clearTerminal" android:contentDescription="Clear terminal"
             android:minWidth="0dp" android:minHeight="0dp" android:padding="0dp"
             android:insetLeft="0dp" android:insetRight="0dp" android:insetTop="0dp" android:insetBottom="0dp"
-            android:layout_width="36dp" android:layout_height="40dp"/>
+            android:layout_width="34dp" android:layout_height=" 40dp" android:layout_marginLeft="2dp" android:layout_marginRight="2dp"/>
         <Button android:id="@+id/formatToggle" android:contentDescription="Toggle receive format"
             android:minWidth="0dp" android:minHeight="0dp" android:padding="0dp"
             android:insetLeft="0dp" android:insetRight="0dp" android:insetTop="0dp" android:insetBottom="0dp"
-            android:layout_width="36dp" android:layout_height="40dp"/>
+            android:layout_width="34dp" android:layout_height=" 40dp" android:layout_marginLeft="2dp" android:layout_marginRight="2dp"/>
         <Button android:id="@+id/autoScroll" android:contentDescription="Toggle auto-scroll"
             android:minWidth="0dp" android:minHeight="0dp" android:padding="0dp"
             android:insetLeft="0dp" android:insetRight="0dp" android:insetTop="0dp" android:insetBottom="0dp"
-            android:layout_width="36dp" android:layout_height="40dp"/>
+            android:layout_width="34dp" android:layout_height=" 40dp" android:layout_marginLeft="2dp" android:layout_marginRight="2dp"/>
         <Button android:id="@+id/baudControl" android:text="9600" android:contentDescription="UART baud rate"
             android:textAllCaps="false" android:minWidth="0dp" android:minHeight="0dp"
             android:gravity="center" android:paddingLeft="4dp" android:paddingRight="4dp"
-            android:insetLeft="0dp" android:insetRight="0dp" android:layout_width="88dp"
-            android:layout_height="40dp" android:layout_marginLeft="4dp" android:layout_marginRight="4dp"/>
+            android:insetLeft="0dp" android:insetRight="0dp" android:layout_width="76dp"
+            android:layout_height="40dp" android:layout_marginLeft="2dp" android:layout_marginRight="2dp"/>
         <Button android:id="@+id/menu" android:contentDescription="More options"
             android:minWidth="0dp" android:minHeight="0dp" android:padding="0dp"
             android:insetLeft="0dp" android:insetRight="0dp" android:insetTop="0dp" android:insetBottom="0dp"
-            android:layout_width="36dp" android:layout_height="40dp"/>
+            android:layout_width="34dp" android:layout_height=" 40dp" android:layout_marginLeft="2dp" android:layout_marginRight="2dp"/>
     </LinearLayout>
 
     <TextView android:id="@+id/status" android:text="●  USB DISCONNECTED" android:textColor="#FF8B8B"
@@ -75,7 +75,7 @@
             android:scrollbars="vertical" android:fadeScrollbars="false"
             android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
             <TextView android:id="@+id/terminal" android:textColor="#E0E0E0" android:typeface="monospace"
-                android:textSize="13sp" android:padding="8dp" android:textIsSelectable="true"
+                android:textSize="13sp" android:includeFontPadding="false" android:lineSpacingExtra="0dp" android:padding="8dp" android:textIsSelectable="true"
                 android:gravity="top|start" android:layout_width="match_parent" android:layout_height="wrap_content"/>
         </ScrollView>
         <HorizontalScrollView android:scrollbars="none" android:layout_width="match_parent" android:layout_height="56dp">
