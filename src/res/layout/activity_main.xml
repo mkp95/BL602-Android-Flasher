@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:padding="12dp"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+    <TextView android:id="@+id/title" android:text="BL602 UART TOOL"
+        android:textStyle="bold" android:textSize="20sp"
+        android:layout_width="match_parent" android:layout_height="wrap_content" />
+    <TextView android:id="@+id/status" android:text="USB disconnected"
+        android:textColor="#B00020" android:paddingTop="4dp"
+        android:layout_width="match_parent" android:layout_height="wrap_content" />
+    <LinearLayout android:orientation="horizontal"
+        android:layout_width="match_parent" android:layout_height="wrap_content">
+        <Button android:id="@+id/tabFlash" android:text="FLASH" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" />
+        <Button android:id="@+id/tabMonitor" android:text="MONITOR" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" />
+        <Button android:id="@+id/tabSettings" android:text="SETTINGS" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" />
+    </LinearLayout>
+    <ScrollView android:id="@+id/flashPanel" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
+        <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content">
+            <TextView android:text="BL602 firmware images" android:textStyle="bold" android:paddingTop="8dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <Button android:id="@+id/pickFirmware" android:text="Select BIN file(s)" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <TextView android:id="@+id/firmwareList" android:text="No firmware selected" android:padding="8dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <TextView android:text="Each image can be assigned its own flash address." android:textSize="12sp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <Button android:id="@+id/startFlash" android:text="FLASH BL602" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <ProgressBar android:id="@+id/progress" style="?android:attr/progressBarStyleHorizontal" android:max="100" android:progress="0" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <TextView android:id="@+id/flashLog" android:text="Flash log" android:padding="8dp" android:textIsSelectable="true" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+        </LinearLayout>
+    </ScrollView>
+    <LinearLayout android:id="@+id/monitorPanel" android:orientation="vertical" android:visibility="gone" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
+        <LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content">
+            <Button android:id="@+id/connect" android:text="Connect" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
+            <Button android:id="@+id/disconnect" android:text="Disconnect" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
+        </LinearLayout>
+        <TextView android:id="@+id/terminal" android:text="Serial output appears here..." android:background="#101820" android:textColor="#B8F5C8" android:typeface="monospace" android:textSize="12sp" android:padding="8dp" android:textIsSelectable="true" android:gravity="bottom" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" />
+        <LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content">
+            <EditText android:id="@+id/sendText" android:hint="Enter command" android:singleLine="true" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
+            <Button android:id="@+id/send" android:text="SEND" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+        </LinearLayout>
+        <LinearLayout android:orientation="horizontal" android:layout_width="match_parent" android:layout_height="wrap_content">
+            <Button android:id="@+id/copy" android:text="Copy all" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
+            <Button android:id="@+id/paste" android:text="Paste" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
+            <Button android:id="@+id/clear" android:text="Clear" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"/>
+        </LinearLayout>
+    </LinearLayout>
+    <ScrollView android:id="@+id/settingsPanel" android:visibility="gone" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
+        <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content">
+            <TextView android:text="UART settings" android:textStyle="bold" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <EditText android:id="@+id/baudRate" android:inputType="number" android:text="500000" android:hint="Baud rate" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <TextView android:text="Data: 8 bits · Parity: none · Stop: 1" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <TextView android:text="Reset controls (when CH340 board exposes DTR/RTS)" android:textStyle="bold" android:paddingTop="12dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <Button android:id="@+id/dtr" android:text="Toggle DTR" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <Button android:id="@+id/rts" android:text="Toggle RTS" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <TextView android:text="Manual reset: hold BOOT, pulse RESET, release RESET, then release BOOT. Wiring varies by board." android:textSize="12sp" android:padding="8dp" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
