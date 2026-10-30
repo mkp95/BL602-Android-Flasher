@@ -176,7 +176,10 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         } else {
             text = new String(data, java.nio.charset.StandardCharsets.UTF_8);
         }
-        runOnUiThread(() -> appendTerminal(text));
+        runOnUiThread(() -> {
+            appendTerminal(text);
+            refreshModemStatus();
+        });
     }
     @Override public void onRunError(Exception e) {
         runOnUiThread(() -> appendTerminal("\n[serial error: " + e.getMessage() + "]\n"));
