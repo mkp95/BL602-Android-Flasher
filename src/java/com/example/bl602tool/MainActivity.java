@@ -85,7 +85,9 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         formatToggle.setOnClickListener(v -> setFormatMode(formatMode == 0 ? 1 : 0));
         viewMode.setSelection(formatMode);
         viewMode.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
-            @Override public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) { setFormatMode(position); }
+            @Override public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                if (position != formatMode) applyFormatMode(position, false);
+            }
             @Override public void onNothingSelected(android.widget.AdapterView<?> parent) { }
         });
         updateFormatToggle();
@@ -249,15 +251,18 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
     }
 
     private void setFormatMode(int mode) {
+        applyFormatMode(mode, true);
+    }
+
+    private void applyFormatMode(int mode, boolean syncSpinner) {
         int selected = mode == 1 ? 1 : 0;
-        if (formatMode == selected && viewMode.getSelectedItemPosition() == selected) {
-            updateFormatToggle();
-            return;
-        }
+        boolean changed = formatMode != selected;
         formatMode = selected;
-        if (viewMode.getSelectedItemPosition() != selected) viewMode.setSelection(selected);
+        if (syncSpinner && viewMode != null && viewMode.getSelectedItemPosition() != selected) {
+            viewMode.setSelection(selected);
+        }
         updateFormatToggle();
-        rerenderTerminal();
+        if (changed) rerenderTerminal();
     }
 
     private void updateFormatToggle() {
