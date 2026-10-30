@@ -81,6 +81,7 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         viewMode = findViewById(R.id.viewMode);
         newlineMode = findViewById(R.id.newlineMode);
         viewMode.setAdapter(createDarkSpinnerAdapter(new String[]{"ASCII / UTF-8","Hexadecimal"}));
+        formatMode = getSharedPreferences("terminal", MODE_PRIVATE).getInt("formatMode", 0);
         formatToggle = findViewById(R.id.formatToggle);
         formatToggle.setOnClickListener(v -> setFormatMode(formatMode == 0 ? 1 : 0));
         viewMode.setSelection(formatMode);
@@ -92,12 +93,16 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
         });
         updateFormatToggle();
         newlineMode.setAdapter(createDarkSpinnerAdapter(new String[]{"CR + LF","LF","CR","None"}));
+        newlineMode.setSelection(getSharedPreferences("terminal", MODE_PRIVATE).getInt("newlineMode", 0));
+        newlineMode.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() { @Override public void onItemSelected(android.widget.AdapterView<?> p, View v, int pos, long id) { getSharedPreferences("terminal", MODE_PRIVATE).edit().putInt("newlineMode", pos).apply(); } @Override public void onNothingSelected(android.widget.AdapterView<?> p) { } });
         connectButton = findViewById(R.id.connect);
         autoScrollButton = findViewById(R.id.autoScroll);
+        autoScroll = getSharedPreferences("terminal", MODE_PRIVATE).getBoolean("autoScroll", true);
         connectButton.setOnClickListener(v -> { if (port == null) connectUsb(); else disconnectUsb(); });
         findViewById(R.id.clearTerminal).setOnClickListener(v -> clearTerminal());
         autoScrollButton.setOnClickListener(v -> {
             autoScroll = !autoScroll;
+            getSharedPreferences("terminal", MODE_PRIVATE).edit().putBoolean("autoScroll", autoScroll).apply();
             updateAutoScrollButton();
             if (autoScroll) terminalScroll.post(() -> terminalScroll.fullScroll(View.FOCUS_DOWN));
         });
@@ -377,10 +382,11 @@ public class MainActivity extends Activity implements SerialInputOutputManager.L
                 custom.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
                 custom.setText(baudRate.getText());
                 new AlertDialog.Builder(this).setTitle("Custom baud rate").setView(custom)
-                    .setPositiveButton("Apply", (d, w) -> { baudRate.setText(custom.getText()); applyBaudLabel(); })
+                    .setPositiveButton("Apply", (d, w) -> { baudRate.setText(custom.getText()); getSharedPreferences("terminal", MODE_PRIVATE).edit().putString("baudRate", custom.getText().toString()).apply(); applyBaudLabel(); })
                     .setNegativeButton("Cancel", null).show();
             } else {
                 baudRate.setText(choices[which]);
+                getSharedPreferences("terminal", MODE_PRIVATE).edit().putString("baudRate", choices[which]).apply();
                 applyBaudLabel();
             }
         }).show();
